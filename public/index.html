@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNPL Solutions - Boost Your Sales with Payment Plans</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">💳 BNPL Solutions</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#providers">Providers</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Help Your Customers Buy More</h1>
+                <p class="hero-subtitle">Offer Buy Now Pay Later payment plans — No upfront cost, zero risk, immediate payment to you</p>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">+30%</div>
+                        <div class="stat-label">Conversion Increase</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">+40%</div>
+                        <div class="stat-label">Average Order Value</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">7 days</div>
+                        <div class="stat-label">Setup Time</div>
+                    </div>
+                </div>
+                <div class="hero-cta">
+                    <button class="btn btn-primary" onclick="scrollToWaitlist()">Get Early Access</button>
+                    <button class="btn btn-secondary" onclick="scrollToContact()">Schedule a Demo</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problems">
+        <div class="container">
+            <h2>Why Small Businesses Are Missing Out</h2>
+            <div class="problems-grid">
+                <div class="problem-card">
+                    <div class="problem-icon">🛒</div>
+                    <h3>High Cart Abandonment</h3>
+                    <p>70% of shoppers abandon carts because they can't afford the full price today</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">📉</div>
+                    <h3>Low Average Order Value</h3>
+                    <p>Customers buy less when they're worried about cash flow</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">⚔️</div>
+                    <h3>Losing to Bigger Competitors</h3>
+                    <p>Large retailers already offer payment plans. You're fighting with one hand tied</p>
+                </div>
+                <div class="problem-card">
+                    <div class="problem-icon">💰</div>
+                    <h3>Limited Payment Options</h3>
+                    <p>Credit checks take days, many customers get rejected, you take the risk</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution" id="features">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="solution-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Customer Selects Payment Plan</h3>
+                    <p>Customer buys your £300 item, chooses to split into 3 payments of £100</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>You Get Paid Immediately</h3>
+                    <p>Full £300 lands in your account within 24 hours, minus a small fee (2-5%)</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Zero Risk to You</h3>
+                    <p>BNPL provider handles repayment & credit risk. You've already been paid</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Providers Section -->
+    <section class="providers" id="providers">
+        <div class="container">
+            <h2>Top BNPL Providers</h2>
+            <div class="providers-grid">
+                <div class="provider-card">
+                    <h3>Klarna</h3>
+                    <p class="fee">2.49% + 30¢</p>
+                    <p>3-4x monthly payments</p>
+                    <p class="desc">Best for fashion, lifestyle, home</p>
+                </div>
+                <div class="provider-card">
+                    <h3>Clearpay</h3>
+                    <p class="fee">4-6%</p>
+                    <p>4x fortnightly payments</p>
+                    <p class="desc">Best for retail & beauty</p>
+                </div>
+                <div class="provider-card">
+                    <h3>Stripe Installments</h3>
+                    <p class="fee">5.99-29.99% APR</p>
+                    <p>3-24 months</p>
+                    <p class="desc">Works with existing Stripe account</p>
+                </div>
+                <div class="provider-card">
+                    <h3>PayPal Pay Later</h3>
+                    <p class="fee">~2.9%</p>
+                    <p>4x fortnightly payments</p>
+                    <p class="desc">Easy add-on for PayPal users</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <h2>Simple, Transparent Pricing</h2>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">£299</div>
+                    <p class="price-desc">One-time setup</p>
+                    <ul class="features-list">
+                        <li>✓ Provider recommendation</li>
+                        <li>✓ One provider setup</li>
+                        <li>✓ Staff training (30 min)</li>
+                        <li>✓ 30-day support</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="scrollToContact()">Get Started</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="badge">Most Popular</div>
+                    <h3>Growth</h3>
+                    <div class="price">£599</div>
+                    <p class="price-desc">One-time setup</p>
+                    <ul class="features-list">
+                        <li>✓ 2-3 provider setup</li>
+                        <li>✓ A/B test optimization</li>
+                        <li>✓ Analytics setup</li>
+                        <li>✓ 90-day support</li>
+                        <li>✓ 1 check-in call</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="scrollToContact()">Choose Plan</button>
+                </div>
+                <div class="pricing-card">
+                    <h3>Premium</h3>
+                    <div class="price">£999 + £99/mo</div>
+                    <p class="price-desc">Full BNPL stack</p>
+                    <ul class="features-list">
+                        <li>✓ Full provider setup (3+)</li>
+                        <li>✓ Custom checkout optimization</li>
+                        <li>✓ Monthly performance reviews</li>
+                        <li>✓ Priority support</li>
+                    </ul>
+                    <button class="btn btn-outline" onclick="scrollToContact()">Contact Sales</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials">
+        <div class="container">
+            <h2>What Businesses Are Saying</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial">
+                    <p>"Setup took just 3 days. Within 2 weeks we saw a 25% jump in average order value. Best investment we've made."</p>
+                    <strong>Sarah, Fashion Boutique Owner</strong>
+                </div>
+                <div class="testimonial">
+                    <p>"Our cart abandonment dropped by 40%. Customers love having payment options. Highly recommend."</p>
+                    <strong>James, Furniture Shop</strong>
+                </div>
+                <div class="testimonial">
+                    <p>"I was worried about fees, but the extra sales completely offset them. We're keeping all providers we set up."</p>
+                    <strong>Maria, Home Decor Store</strong>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <h2>Let's Get You Started</h2>
+            <div class="contact-wrapper">
+                <form class="contact-form" id="contactForm">
+                    <h3>Get a Free Consultation</h3>
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Email Address" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Business Name" name="company" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" placeholder="Phone Number" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Tell us about your business..." name="message" rows="4"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Send Message</button>
+                    <p class="form-note">We'll respond within 24 hours</p>
+                </form>
+
+                <div class="contact-info">
+                    <h3>Connect With Us</h3>
+                    <p>Have questions? Reach out on social or fill the form.</p>
+                    <div class="social-links">
+                        <a href="https://linkedin.com" target="_blank" class="social-btn" title="LinkedIn">LinkedIn</a>
+                        <a href="https://twitter.com" target="_blank" class="social-btn" title="Twitter">Twitter</a>
+                        <a href="https://instagram.com" target="_blank" class="social-btn" title="Instagram">Instagram</a>
+                        <a href="mailto:fawaz@belloite.com" class="social-btn" title="Email">Email</a>
+                    </div>
+                    <div class="contact-stats">
+                        <div class="contact-stat">
+                            <span class="contact-stat-label">Average Setup Time</span>
+                            <span class="contact-stat-value">7 days</span>
+                        </div>
+                        <div class="contact-stat">
+                            <span class="contact-stat-label">Businesses Supported</span>
+                            <span class="contact-stat-value">150+</span>
+                        </div>
+                        <div class="contact-stat">
+                            <span class="contact-stat-label">Average ROI</span>
+                            <span class="contact-stat-value">3-4 weeks</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Waitlist Section -->
+    <section class="waitlist" id="waitlist">
+        <div class="container">
+            <div class="waitlist-card">
+                <h2>Join 500+ Businesses on Our Waitlist</h2>
+                <p>Get early access, exclusive tips, and a special launch discount</p>
+                <form class="waitlist-form" id="waitlistForm">
+                    <div class="form-group">
+                        <input type="email" placeholder="your@email.com" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Your business name" name="company">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Your name" name="name">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Join Waitlist</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 BNPL Solutions. Helping small businesses grow.</p>
+            <div class="footer-links">
+                <a href="#features">Features</a>
+                <a href="#providers">Providers</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
