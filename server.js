@@ -43,6 +43,9 @@ app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (
   }
 });
 
+// Trust proxy (important for Railway and other proxies)
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({
