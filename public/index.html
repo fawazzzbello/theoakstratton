@@ -181,6 +181,75 @@
         </div>
     </section>
 
+    <!-- Payment Section -->
+    <section class="payment-section" id="payment">
+        <div class="container">
+            <h2>Try Our Payment Integration</h2>
+            <p class="section-subtitle">Experience BNPL checkout with all payment methods</p>
+
+            <div id="paymentContainer" class="payment-container">
+                <div class="payment-form-wrapper">
+                    <h3>Select Payment Method</h3>
+                    <div id="paymentMethodsList" class="payment-methods-grid"></div>
+                    <input type="hidden" id="selectedPaymentMethod" value="">
+
+                    <form id="paymentForm" onsubmit="processPayment(event)" class="payment-form">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="paymentName" placeholder="John Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="paymentEmail" placeholder="john@example.com" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Amount (£)</label>
+                            <input type="number" id="paymentAmount" placeholder="50" min="1" step="0.01" required>
+                        </div>
+
+                        <div id="cardElementContainer" style="display: none;">
+                            <label>Card Details</label>
+                            <div id="cardElement" style="
+                                border: 1px solid #e5e7eb;
+                                padding: 1rem;
+                                border-radius: 6px;
+                                background: white;
+                            "></div>
+                            <div id="cardErrors" style="color: #ef4444; margin-top: 0.5rem;"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Complete Payment</button>
+                        <p class="payment-disclaimer">This is a demo. No real charges will be made.</p>
+                    </form>
+                </div>
+
+                <div class="payment-info">
+                    <h3>Payment Methods Available</h3>
+                    <div class="payment-details">
+                        <div class="payment-detail-item">
+                            <strong>Klarna</strong>
+                            <p>3-4 monthly instalments, 2.49% + 30p fee</p>
+                        </div>
+                        <div class="payment-detail-item">
+                            <strong>Clearpay</strong>
+                            <p>4 fortnightly payments, 4-6% fee</p>
+                        </div>
+                        <div class="payment-detail-item">
+                            <strong>PayPal Pay Later</strong>
+                            <p>4 instalments, ~2.9% fee</p>
+                        </div>
+                        <div class="payment-detail-item">
+                            <strong>Card Payment</strong>
+                            <p>Instant payment, 1.4% + 20p fee</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Testimonials Section -->
     <section class="testimonials">
         <div class="container">
@@ -290,7 +359,14 @@
             </div>
         </div>
     </footer>
+
+    <!-- Stripe Payment Integration -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <!-- reCAPTCHA v3 (optional) -->
+    <!-- Scripts -->
 <script src="https://www.google.com/recaptcha/api.js?render=6LdjfvcsAAAAABqnLtK8ZSSjuat0GKYYC8EuzTKn"></script>
     <script src="main.js"></script>
+    <script src="payment.js"></script>
 </body>
 </html>

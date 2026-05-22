@@ -7,6 +7,10 @@ function scrollToContact() {
     document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
 }
 
+function scrollToPayment() {
+    document.getElementById('payment').scrollIntoView({ behavior: 'smooth' });
+}
+
 // Contact form submission
 const contactForm = document.getElementById('contactForm');
 if (contactForm) {
@@ -15,6 +19,15 @@ if (contactForm) {
 
         const formData = new FormData(contactForm);
         const data = Object.fromEntries(formData);
+
+        // Add reCAPTCHA token if available
+        if (window.grecaptcha) {
+            try {
+                data.recaptchaToken = await window.grecaptcha.execute('YOUR_RECAPTCHA_SITE_KEY', { action: 'contact' });
+            } catch (err) {
+                console.warn('reCAPTCHA not configured:', err);
+            }
+        }
 
         try {
             const response = await fetch('/api/contact', {
@@ -31,7 +44,7 @@ if (contactForm) {
                 showMessage('Thank you! We\'ll be in touch within 24 hours.', 'success');
                 contactForm.reset();
             } else {
-                showMessage('Something went wrong. Please try again.', 'error');
+                showMessage(result.error || 'Something went wrong. Please try again.', 'error');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -49,6 +62,15 @@ if (waitlistForm) {
         const formData = new FormData(waitlistForm);
         const data = Object.fromEntries(formData);
 
+        // Add reCAPTCHA token if available
+        if (window.grecaptcha) {
+            try {
+                data.recaptchaToken = await window.grecaptcha.execute('YOUR_RECAPTCHA_SITE_KEY', { action: 'waitlist' });
+            } catch (err) {
+                console.warn('reCAPTCHA not configured:', err);
+            }
+        }
+
         try {
             const response = await fetch('/api/waitlist', {
                 method: 'POST',
@@ -64,7 +86,7 @@ if (waitlistForm) {
                 showMessage('Welcome to the waitlist! Check your email for confirmation.', 'success');
                 waitlistForm.reset();
             } else {
-                showMessage('Something went wrong. Please try again.', 'error');
+                showMessage(result.error || 'Something went wrong. Please try again.', 'error');
             }
         } catch (error) {
             console.error('Error:', error);

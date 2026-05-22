@@ -205,17 +205,75 @@ const db = new sqlite3.Database(':memory:');
 const db = new sqlite3.Database('./leads.db');
 ```
 
-## Security Considerations
+## Security Features ✅
 
-⚠️ **Before going to production:**
+All production security best practices are implemented:
 
-1. Add authentication to `/api/leads` endpoint
-2. Implement rate limiting on forms
-3. Add CSRF protection
-4. Validate and sanitize all inputs
-5. Use environment variables for all sensitive data
-6. Enable HTTPS
-7. Consider adding reCAPTCHA to prevent spam
+### 1. **Rate Limiting**
+- Forms: 5 requests per 15 minutes per IP
+- API: 100 requests per hour per IP
+- Prevents spam and brute force attacks
+
+### 2. **Input Validation & Sanitization**
+- All inputs validated with `validator.js`
+- HTML special characters escaped before storing/sending
+- Max length limits enforced (name: 100, email: 254, message: 5000)
+- Invalid emails rejected
+
+### 3. **API Authentication**
+- `/api/leads` endpoint requires `API_KEY` header
+- Pass API key via: `X-API-Key: your-key` or `?api_key=your-key`
+- Set `API_KEY` in environment variables
+
+### 4. **reCAPTCHA v3 (Optional)**
+- Integrated reCAPTCHA support to prevent bot spam
+- Non-intrusive (no user interaction required)
+- Get keys: https://www.google.com/recaptcha/admin
+- Configure in `.env`: `RECAPTCHA_SECRET_KEY` & `RECAPTCHA_SITE_KEY`
+
+### 5. **Security Headers**
+- Helmet.js for HTTP security headers
+- CORS properly configured
+- Content Security Policy enabled
+- X-Frame-Options, X-Content-Type-Options, etc.
+
+### 6. **Database**
+- Parameterized queries (prevent SQL injection)
+- UNIQUE constraint on emails
+- No sensitive data in logs
+
+### 7. **HTTPS**
+- Railway automatically provides free HTTPS
+- All traffic encrypted end-to-end
+
+### 8. **Environment Variables**
+- All secrets stored in `.env` file
+- Never committed to git (`.gitignore` configured)
+- API keys, SMTP password protected
+
+### Configuration Checklist
+
+```env
+# Required for security
+API_KEY=generate-a-random-strong-key
+NODE_ENV=production
+
+# Optional but recommended
+RECAPTCHA_SECRET_KEY=your-key-from-google
+RECAPTCHA_SITE_KEY=your-site-key-from-google
+CORS_ORIGIN=https://yourdomain.com
+```
+
+### Getting Leads Securely
+
+```bash
+curl -H "X-API-Key: YOUR_API_KEY" https://yourdomain.com/api/leads
+```
+
+Or with query parameter:
+```bash
+curl https://yourdomain.com/api/leads?api_key=YOUR_API_KEY
+```
 
 ## Support
 
