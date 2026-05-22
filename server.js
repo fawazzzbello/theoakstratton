@@ -107,7 +107,7 @@ db.serialize(() => {
   `);
 });
 
-// Configure SMTP transporter
+// Configure SMTP transporter with error handling
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: process.env.SMTP_PORT || 587,
@@ -115,6 +115,16 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
+  }
+});
+
+// Test SMTP connection on startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('SMTP Configuration Error:', error);
+    console.warn('⚠️  Email functionality may not work. Check your SMTP credentials in .env');
+  } else if (success) {
+    console.log('✓ SMTP connection successful. Email services ready.');
   }
 });
 
@@ -350,34 +360,46 @@ app.post('/api/contact', formLimiter, async (req, res) => {
     });
 
     // Send email to business owner
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL || 'fawaz@belloite.com',
-      subject: `New Contact: ${escapedName} from ${escapedCompany}`,
-      html: `
-        <h2>New inquiry from your BNPL landing page</h2>
-        <p><strong>Name:</strong> ${escapedName}</p>
-        <p><strong>Email:</strong> ${escapedEmail}</p>
-        <p><strong>Company:</strong> ${escapedCompany}</p>
-        <p><strong>Phone:</strong> ${escapedPhone || 'Not provided'}</p>
-        <p><strong>Message:</strong></p>
-        <p>${escapedMessage || 'No message'}</p>
-      `
-    });
+    if (process.env.SMTP_USER) {
+      try {
+        await transporter.sendMail({
+          from: process.env.SMTP_USER,
+          to: process.env.ADMIN_EMAIL || 'fawaz@belloite.com',
+          subject: `New Contact: ${escapedName} from ${escapedCompany}`,
+          html: `
+            <h2>New inquiry from your BNPL landing page</h2>
+            <p><strong>Name:</strong> ${escapedName}</p>
+            <p><strong>Email:</strong> ${escapedEmail}</p>
+            <p><strong>Company:</strong> ${escapedCompany}</p>
+            <p><strong>Phone:</strong> ${escapedPhone || 'Not provided'}</p>
+            <p><strong>Message:</strong></p>
+            <p>${escapedMessage || 'No message'}</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send admin notification:', emailError);
+      }
 
-    // Send confirmation email to lead
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: email,
-      subject: 'Thanks for reaching out - BNPL Solutions',
-      html: `
-        <h2>Thanks for your interest!</h2>
-        <p>Hi ${escapedName},</p>
-        <p>We've received your message and will be in touch within 24 hours.</p>
-        <p>In the meantime, check out our full BNPL solutions guide for small businesses.</p>
-        <p>Best regards,<br>The BNPL Solutions Team</p>
-      `
-    });
+      // Send confirmation email to lead
+      try {
+        await transporter.sendMail({
+          from: process.env.SMTP_USER,
+          to: email,
+          subject: 'Thanks for reaching out - BNPL Solutions',
+          html: `
+            <h2>Thanks for your interest!</h2>
+            <p>Hi ${escapedName},</p>
+            <p>We've received your message and will be in touch within 24 hours.</p>
+            <p>In the meantime, check out our full BNPL solutions guide for small businesses.</p>
+            <p>Best regards,<br>The BNPL Solutions Team</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+      }
+    } else {
+      console.warn('SMTP not configured. Skipping email notifications.');
+    }
 
     res.status(200).json({ success: true, message: 'Thank you! We\'ll be in touch soon.' });
   } catch (error) {
@@ -435,29 +457,41 @@ app.post('/api/waitlist', formLimiter, async (req, res) => {
     });
 
     // Send confirmation to lead
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: email,
-      subject: 'Welcome to our waitlist!',
-      html: `
-        <h2>You're on the list! 🎉</h2>
-        <p>Thanks for joining the waitlist for BNPL solutions.</p>
-        <p>We'll send you early access, exclusive tips, and a special launch discount when we open.</p>
-        <p>Best regards,<br>The BNPL Solutions Team</p>
-      `
-    });
+    if (process.env.SMTP_USER) {
+      try {
+        await transporter.sendMail({
+          from: process.env.SMTP_USER,
+          to: email,
+          subject: 'Welcome to our waitlist!',
+          html: `
+            <h2>You're on the list! 🎉</h2>
+            <p>Thanks for joining the waitlist for BNPL solutions.</p>
+            <p>We'll send you early access, exclusive tips, and a special launch discount when we open.</p>
+            <p>Best regards,<br>The BNPL Solutions Team</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send waitlist confirmation:', emailError);
+      }
 
-    // Notify admin
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: process.env.ADMIN_EMAIL || 'fawaz@belloite.com',
-      subject: `New waitlist signup: ${escapedEmail}`,
-      html: `
-        <p><strong>Email:</strong> ${escapedEmail}</p>
-        <p><strong>Company:</strong> ${escapedCompany || 'Not provided'}</p>
-        <p><strong>Name:</strong> ${escapedName || 'Not provided'}</p>
-      `
-    });
+      // Notify admin
+      try {
+        await transporter.sendMail({
+          from: process.env.SMTP_USER,
+          to: process.env.ADMIN_EMAIL || 'fawaz@belloite.com',
+          subject: `New waitlist signup: ${escapedEmail}`,
+          html: `
+            <p><strong>Email:</strong> ${escapedEmail}</p>
+            <p><strong>Company:</strong> ${escapedCompany || 'Not provided'}</p>
+            <p><strong>Name:</strong> ${escapedName || 'Not provided'}</p>
+          `
+        });
+      } catch (emailError) {
+        console.error('Failed to send admin waitlist notification:', emailError);
+      }
+    } else {
+      console.warn('SMTP not configured. Skipping email notifications.');
+    }
 
     res.status(200).json({ success: true, message: 'Welcome to the waitlist!' });
   } catch (error) {
