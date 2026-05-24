@@ -1,6 +1,9 @@
 import axios, { AxiosInstance, AxiosError } from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+// Use the current domain as API base URL
+// This works for both local development and production
+const API_BASE_URL = import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}` : 'http://localhost:3000')
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
