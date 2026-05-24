@@ -57,8 +57,30 @@ app.use(bodyParser.json({ limit: '10kb' }))
 app.use(bodyParser.urlencoded({ extended: true, limit: '10kb' }))
 
 // Serve static files (React build)
-app.use(express.static(path.join(__dirname, 'dist')))
-app.use(express.static(path.join(__dirname, 'public')))
+const distPath = path.join(__dirname, 'dist')
+const publicPath = path.join(__dirname, 'public')
+
+console.log('📁 Checking static file directories:')
+console.log(`   - dist path: ${distPath}`)
+console.log(`   - public path: ${publicPath}`)
+
+// Check if dist exists
+try {
+  const fs = require('fs')
+  const distExists = fs.existsSync(distPath)
+  const publicExists = fs.existsSync(publicPath)
+  console.log(`   - dist exists: ${distExists}`)
+  console.log(`   - public exists: ${publicExists}`)
+  if (distExists) {
+    const files = fs.readdirSync(distPath)
+    console.log(`   - dist files: ${files.join(', ')}`)
+  }
+} catch (e) {
+  console.log('   - Error checking directories:', e.message)
+}
+
+app.use(express.static(distPath))
+app.use(express.static(publicPath))
 
 // Rate limiters
 const authLimiter = rateLimit({
@@ -451,10 +473,17 @@ app.get('*', (req, res) => {
 // ============================================================================
 
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`)
-  console.log('Security features enabled: Helmet, Rate Limiting, Input Validation')
-  console.log('Authentication: JWT with refresh tokens')
+  console.log(`\n✅ Server running at http://localhost:${PORT}`)
+  console.log(`🌍 API URL: ${process.env.API_URL || 'http://localhost:3000'}`)
+  console.log(`📱 Frontend URL: ${process.env.VITE_API_URL || 'http://localhost:3000'}`)
+  console.log(`🔐 Security features enabled: Helmet, Rate Limiting, Input Validation`)
+  console.log(`🔑 Authentication: JWT with refresh tokens`)
   if (process.env.DATABASE_URL) {
-    console.log('Database: PostgreSQL')
+    console.log(`🗄️  Database: PostgreSQL`)
+  } else {
+    console.log(`⚠️  Database: Not configured (DATABASE_URL not set)`)
   }
+  console.log(`📧 SMTP: ${process.env.SMTP_USER ? 'Configured' : 'Not configured'}`)
+  console.log(`🌐 CORS Origin: ${process.env.CORS_ORIGIN || 'All origins'}`)
+  console.log(`📦 Environment: ${process.env.NODE_ENV || 'development'}\n`)
 })
