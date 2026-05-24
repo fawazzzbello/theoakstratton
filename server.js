@@ -327,16 +327,23 @@ app.post('/api/auth/refresh-token', (req, res) => {
 
     jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh-secret', (err, user) => {
       if (err) {
+        console.error('Token verification error:', err.message)
         return res.status(403).json({ error: 'Invalid refresh token' })
       }
 
-      const accessToken = jwt.sign(user, process.env.JWT_SECRET || 'secret', {
-        expiresIn: '15m',
-      })
-
-      res.json({ accessToken })
+      try {
+        const { iat, exp, ...userPayload } = user
+        const accessToken = jwt.sign(userPayload, process.env.JWT_SECRET || 'secret', {
+          expiresIn: '15m',
+        })
+        res.json({ accessToken })
+      } catch (signError) {
+        console.error('Token signing error:', signError)
+        res.status(500).json({ error: 'Token refresh failed' })
+      }
     })
   } catch (error) {
+    console.error('Token refresh error:', error.message)
     res.status(500).json({ error: 'Token refresh failed' })
   }
 })
