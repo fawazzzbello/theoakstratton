@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import api from '@/services/api'
 
 interface Slide {
   id: number
@@ -11,7 +12,7 @@ interface Slide {
   gradient: string
 }
 
-const slides: Slide[] = [
+const defaultSlides: Slide[] = [
   {
     id: 1,
     title: 'Help Your Customers Buy More',
@@ -42,16 +43,47 @@ const slides: Slide[] = [
 ]
 
 export default function Hero3DSlider() {
+  const [slides, setSlides] = useState<Slide[]>(defaultSlides)
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    fetchSlides()
+  }, [])
+
+  const fetchSlides = async () => {
+    try {
+      const response = await api.get('/api/landing-content')
+      const content = response.data
+
+      if (content.hero_content) {
+        try {
+          const parsedSlides = JSON.parse(content.hero_content)
+          if (Array.isArray(parsedSlides) && parsedSlides.length > 0) {
+            setSlides(parsedSlides)
+          }
+        } catch (e) {
+          setSlides(defaultSlides)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch hero slides:', error)
+      setSlides(defaultSlides)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (loading) return
+
     const timer = setInterval(() => {
       setDirection(1)
       setCurrent((prev) => (prev + 1) % slides.length)
     }, 8000)
     return () => clearInterval(timer)
-  }, [])
+  }, [slides.length, loading])
 
   const slideVariants = {
     enter: (dir: number) => ({
@@ -73,6 +105,19 @@ export default function Hero3DSlider() {
   const paginate = (newDirection: number) => {
     setDirection(newDirection)
     setCurrent((prev) => (prev + newDirection + slides.length) % slides.length)
+  }
+
+  if (loading) {
+    return (
+      <section className="relative min-h-screen pt-20 bg-gradient-to-br from-primary-500 to-secondary-500 animate-pulse">
+        <div className="relative container py-20 h-full flex flex-col justify-center">
+          <div className="text-center text-white">
+            <div className="h-16 bg-white/20 rounded mb-6 max-w-2xl mx-auto"></div>
+            <div className="h-8 bg-white/20 rounded mb-12 max-w-2xl mx-auto"></div>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   const slide = slides[current]

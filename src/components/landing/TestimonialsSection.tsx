@@ -1,6 +1,15 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import api from '@/services/api'
 
-const testimonials = [
+interface Testimonial {
+  quote: string
+  author: string
+  role: string
+  rating: number
+}
+
+const defaultTestimonials: Testimonial[] = [
   {
     quote:
       'Setup took just 3 days. Within 2 weeks we saw a 25% jump in average order value. Best investment we\'ve made.',
@@ -52,6 +61,51 @@ const itemVariants = {
 }
 
 export default function TestimonialsSection() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(defaultTestimonials)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchTestimonials()
+  }, [])
+
+  const fetchTestimonials = async () => {
+    try {
+      const response = await api.get('/api/landing-content')
+      const content = response.data
+
+      if (content.testimonials_content) {
+        try {
+          const parsed = JSON.parse(content.testimonials_content)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setTestimonials(parsed)
+          }
+        } catch (e) {
+          setTestimonials(defaultTestimonials)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch testimonials:', error)
+      setTestimonials(defaultTestimonials)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-gradient-to-b from-light to-white">
+        <div className="container">
+          <div className="animate-pulse h-12 bg-gray-300 rounded mb-8 max-w-md mx-auto"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-48 bg-gray-200 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-20 bg-gradient-to-b from-light to-white">
       <div className="container">
