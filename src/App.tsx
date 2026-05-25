@@ -6,6 +6,7 @@ import AlertNotifications from './components/common/AlertNotifications'
 
 // Pages
 import LandingPage from './pages/Landing'
+import CheckoutPage from './pages/CheckoutPage'
 import LoginPage from './pages/Admin/LoginPage'
 import DashboardPage from './pages/Admin/DashboardPage'
 import LeadsPage from './pages/Admin/LeadsPage'
@@ -29,6 +30,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/admin/login" element={<LoginPage />} />
 
             {/* Protected Admin Routes */}

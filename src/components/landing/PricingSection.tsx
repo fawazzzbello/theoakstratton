@@ -1,9 +1,21 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import api from '@/services/api'
 
-const plans = [
+interface Plan {
+  id: string
+  name: string
+  price_gbp: number
+  description?: string
+  features?: string[]
+}
+
+const defaultPlans: Plan[] = [
   {
+    id: 'starter',
     name: 'Starter',
-    price: '£299',
+    price_gbp: 29900,
     description: 'One-time setup fee',
     features: [
       'Provider recommendation',
@@ -11,12 +23,11 @@ const plans = [
       'Staff training (30 min)',
       '30-day support',
     ],
-    cta: 'Get Started',
-    popular: false,
   },
   {
+    id: 'growth',
     name: 'Growth',
-    price: '£599',
+    price_gbp: 79900,
     description: 'One-time setup fee',
     features: [
       '2-3 provider setup',
@@ -26,12 +37,11 @@ const plans = [
       '1 check-in call',
       'Performance review',
     ],
-    cta: 'Choose Plan',
-    popular: true,
   },
   {
+    id: 'premium',
     name: 'Premium',
-    price: '£999 + £99/mo',
+    price_gbp: 199900,
     description: 'Full BNPL stack',
     features: [
       'Full provider setup (3+)',
@@ -41,8 +51,6 @@ const plans = [
       'Dedicated account manager',
       'Advanced analytics',
     ],
-    cta: 'Contact Sales',
-    popular: false,
   },
 ]
 
@@ -67,6 +75,49 @@ const itemVariants = {
 }
 
 export default function PricingSection() {
+  const [plans, setPlans] = useState<Plan[]>(defaultPlans)
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    fetchPlans()
+  }, [])
+
+  const fetchPlans = async () => {
+    try {
+      const response = await api.get('/api/plans')
+      setPlans(response.data.length > 0 ? response.data : defaultPlans)
+    } catch (error) {
+      console.error('Failed to fetch plans:', error)
+      setPlans(defaultPlans)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatPrice = (pence: number) => {
+    return `£${(pence / 100).toFixed(2)}`
+  }
+
+  const handleSelectPlan = (plan: Plan) => {
+    navigate('/checkout', { state: { plan } })
+  }
+
+  if (loading) {
+    return (
+      <section id="pricing" className="py-20 bg-light">
+        <div className="container text-center">
+          <div className="animate-pulse h-20 bg-gray-300 rounded mb-4"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-96 bg-gray-200 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section id="pricing" className="py-20 bg-light">
       <div className="container">
@@ -81,7 +132,7 @@ export default function PricingSection() {
             Simple, Transparent Pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose the plan that fits your business needs
+            Choose the plan that fits your business needs. Start accepting BNPL payments instantly.
           </p>
         </motion.div>
 
@@ -94,22 +145,20 @@ export default function PricingSection() {
         >
           {plans.map((plan, idx) => (
             <motion.div
-              key={idx}
+              key={plan.id}
               variants={itemVariants}
               whileHover={{
-                y: plan.popular ? -20 : -8,
-                boxShadow: plan.popular
-                  ? '0 40px 80px rgba(0,94,184,0.2)'
-                  : '0 20px 40px rgba(0,0,0,0.1)',
+                y: idx === 1 ? -20 : -8,
+                boxShadow: idx === 1 ? '0 40px 80px rgba(0,94,184,0.2)' : '0 20px 40px rgba(0,0,0,0.1)',
               }}
               className={`card relative transition-all ${
-                plan.popular
+                idx === 1
                   ? 'border-2 border-primary-500 shadow-lg scale-105 md:scale-100 md:md:scale-110'
                   : 'border-2 border-gray-200'
               }`}
             >
               {/* Popular Badge */}
-              {plan.popular && (
+              {idx === 1 && (
                 <motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -123,26 +172,27 @@ export default function PricingSection() {
 
               <div className="p-8">
                 <h3 className="text-2xl font-bold text-dark mb-2">{plan.name}</h3>
-                <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
+                <p className="text-gray-600 text-sm mb-6">{plan.description || 'One-time payment'}</p>
 
                 <div className="mb-6">
-                  <div className="text-4xl font-bold text-gradient mb-2">{plan.price}</div>
+                  <div className="text-4xl font-bold text-gradient mb-2">{formatPrice(plan.price_gbp)}</div>
                 </div>
 
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => handleSelectPlan(plan)}
                   className={`w-full btn btn-lg mb-8 ${
-                    plan.popular
+                    idx === 1
                       ? 'btn-primary'
                       : 'border-2 border-primary-500 text-primary-500 hover:bg-primary-50'
                   }`}
                 >
-                  {plan.cta}
+                  Choose {plan.name}
                 </motion.button>
 
                 <div className="space-y-4">
-                  {plan.features.map((feature, fidx) => (
+                  {(plan.features || []).map((feature, fidx) => (
                     <motion.div
                       key={fidx}
                       initial={{ opacity: 0, x: -20 }}
