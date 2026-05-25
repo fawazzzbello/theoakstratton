@@ -669,10 +669,62 @@ app.post('/api/checkout/create-session', formLimiter, async (req, res) => {
     }
 
     if (databaseAvailable) {
-      const planResult = await pool.query('SELECT id, name, price_gbp, stripe_price_id FROM pricing_plans WHERE id = $1 AND is_active = true', [planId])
+      // Try to find plan by ID, but fall back to name if ID is a string (UUID mismatch)
+      let planResult = { rows: [] }
 
+      try {
+        // Try direct ID lookup first
+        planResult = await pool.query('SELECT id, name, price_gbp, stripe_price_id FROM pricing_plans WHERE id = $1 AND is_active = true', [planId])
+      } catch (err) {
+        // If UUID type error, try looking up by name instead
+        if (err.message.includes('invalid input syntax for type uuid')) {
+          try {
+            planResult = await pool.query('SELECT id, name, price_gbp, stripe_price_id FROM pricing_plans WHERE LOWER(name) = LOWER($1) AND is_active = true', [planId])
+          } catch (nameErr) {
+            // If name lookup also fails, use defaults
+          }
+        }
+      }
+
+      // If still no plan found, use default plans
       if (planResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Plan not found' })
+        const defaults = getDefaultPlans()
+        const defaultPlan = defaults.find(p => p.id === planId)
+        if (!defaultPlan) {
+          return res.status(404).json({ error: 'Plan not found' })
+        }
+
+        // Use default plan data
+        const plan = { id: defaultPlan.id, name: defaultPlan.name, price_gbp: defaultPlan.price_gbp, stripe_price_id: null }
+        const stripePrice = plan.stripe_price_id || (plan.price_gbp * 100).toString()
+        const orderNumber = `ORD-${Date.now()}`
+
+        const session = await stripeClient.checkout.sessions.create({
+          payment_method_types: ['card'],
+          line_items: [
+            {
+              price_data: {
+                currency: 'gbp',
+                product_data: {
+                  name: plan.name,
+                },
+                unit_amount: plan.price_gbp,
+              },
+              quantity: 1,
+            },
+          ],
+          mode: 'payment',
+          success_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.CLIENT_URL || 'http://localhost:3000'}/checkout/cancel`,
+          customer_email: email,
+          metadata: {
+            order_number: orderNumber,
+            plan_id: planId,
+            customer_name: name,
+          },
+        })
+
+        return res.json({ sessionId: session.id, url: session.url })
       }
 
       const plan = planResult.rows[0]

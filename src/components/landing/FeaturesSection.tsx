@@ -1,6 +1,14 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import api from '@/services/api'
 
-const features = [
+interface Feature {
+  icon: string
+  title: string
+  description: string
+}
+
+const defaultFeatures: Feature[] = [
   {
     icon: '🚀',
     title: 'Lightning Fast Setup',
@@ -49,11 +57,56 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: 'easeOut' },
+    transition: { duration: 0.6 },
   },
 }
 
 export default function FeaturesSection() {
+  const [features, setFeatures] = useState<Feature[]>(defaultFeatures)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchFeatures()
+  }, [])
+
+  const fetchFeatures = async () => {
+    try {
+      const response = await api.get('/api/landing-content')
+      const content = response.data
+
+      if (content.features_content) {
+        try {
+          const parsedFeatures = JSON.parse(content.features_content)
+          if (Array.isArray(parsedFeatures) && parsedFeatures.length > 0) {
+            setFeatures(parsedFeatures)
+          }
+        } catch (e) {
+          setFeatures(defaultFeatures)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch features:', error)
+      setFeatures(defaultFeatures)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <section id="features" className="py-20 bg-light">
+        <div className="container">
+          <div className="animate-pulse h-12 bg-gray-300 rounded mb-8 max-w-md"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section id="features" className="py-20 bg-light">
       <div className="container">
@@ -95,8 +148,10 @@ export default function FeaturesSection() {
               >
                 {feature.icon}
               </motion.div>
-              <h3 className="text-xl font-bold text-dark mb-3">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
+              <h3 className="text-xl font-bold text-dark mb-3 group-hover:text-primary-600 transition-colors">
+                {feature.title}
+              </h3>
+              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </motion.div>
