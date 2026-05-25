@@ -143,7 +143,7 @@ export default function ContentManagementPage() {
                             placeholder="Enter JSON array..."
                           />
                           <p className="text-xs text-gray-500 mt-2">
-                            💡 Paste valid JSON here. Eg: [{"id": 1, "name": "Item 1"}]
+                            {`💡 Paste valid JSON here. Eg: [{"id": 1, "name": "Item 1"}]`}
                           </p>
                         </>
                       ) : fieldKey.includes('description') ? (
