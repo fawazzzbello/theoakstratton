@@ -150,30 +150,40 @@ const formLimiter = rateLimit({
 app.use('/api/', apiLimiter)
 
 // ============================================================================
-// SMTP SETUP
+// SMTP SETUP - Outlook/Office365 Compatible
 // ============================================================================
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: process.env.SMTP_PORT || 587,
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
+const smtpConfig = {
+  host: process.env.SMTP_HOST || 'smtp.office365.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: process.env.SMTP_SECURE === 'true' ? true : false,
+  auth: process.env.SMTP_USER ? {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
-  },
-})
+  } : undefined,
+}
+
+// Add TLS options for better compatibility
+if (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('office365')) {
+  smtpConfig.tls = {
+    ciphers: 'SSLv3',
+    rejectUnauthorized: false,
+  }
+}
+
+const transporter = nodemailer.createTransport(smtpConfig)
 
 // Verify SMTP asynchronously without blocking startup
-// Set a timeout to prevent hanging
 if (process.env.SMTP_USER) {
   const smtpVerifyTimeout = setTimeout(() => {
     console.warn('⚠️  SMTP verification timeout. Email services may not work.')
-  }, 3000)
+  }, 5000)
 
   transporter.verify((error, success) => {
     clearTimeout(smtpVerifyTimeout)
     if (error) {
-      console.warn('⚠️  SMTP Configuration Error. Email functionality may not work.')
+      console.error('❌ SMTP Configuration Error:', error.message)
+      console.warn('⚠️  Email functionality disabled. Check SMTP credentials.')
     } else if (success) {
       console.log('✓ SMTP connection successful. Email services ready.')
     }
@@ -221,6 +231,29 @@ function escapeHtml(text) {
     "'": '&#039;',
   }
   return text.replace(/[&<>"']/g, (m) => map[m])
+}
+
+// Send email with retry logic
+async function sendEmailWithRetry(mailOptions, maxRetries = 3) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await transporter.sendMail(mailOptions)
+      console.log(`✓ Email sent successfully to ${mailOptions.to}`)
+      return result
+    } catch (error) {
+      console.error(`Email attempt ${attempt}/${maxRetries} failed for ${mailOptions.to}:`, error.message)
+
+      if (attempt < maxRetries) {
+        // Wait before retrying (exponential backoff)
+        const waitTime = Math.pow(2, attempt - 1) * 1000
+        console.log(`Retrying in ${waitTime}ms...`)
+        await new Promise(resolve => setTimeout(resolve, waitTime))
+      } else {
+        console.error(`Failed to send email to ${mailOptions.to} after ${maxRetries} attempts`)
+        throw error
+      }
+    }
+  }
 }
 
 // ============================================================================
@@ -794,8 +827,9 @@ app.post('/api/contact', formLimiter, async (req, res) => {
     // Send emails if SMTP is configured
     if (process.env.SMTP_USER) {
       try {
-        await transporter.sendMail({
-          from: process.env.SMTP_USER,
+        // Send notification to admin
+        await sendEmailWithRetry({
+          from: `"Oakstratton"<${process.env.SMTP_USER}>`,
           to: process.env.ADMIN_EMAIL || 'fawaz@belloite.com',
           subject: `New Contact: ${name} from ${company}`,
           html: `
@@ -809,19 +843,22 @@ app.post('/api/contact', formLimiter, async (req, res) => {
           `,
         })
 
-        await transporter.sendMail({
-          from: process.env.SMTP_USER,
+        // Send confirmation to customer
+        await sendEmailWithRetry({
+          from: `"Oakstratton Team"<${process.env.SMTP_USER}>`,
           to: email,
-          subject: 'Thanks for reaching out - BNPL Solutions',
+          subject: 'Thanks for reaching out - Oakstratton BNPL',
           html: `
             <h2>Thanks for your interest!</h2>
             <p>Hi ${escapeHtml(name)},</p>
-            <p>We've received your message and will be in touch within 24 hours.</p>
-            <p>Best regards,<br>The Oakstratton Team</p>
+            <p>We've received your inquiry about our BNPL solutions and will review it promptly.</p>
+            <p>Our team will be in touch within 24 hours.</p>
+            <p>Best regards,<br><strong>The Oakstratton Team</strong></p>
           `,
         })
       } catch (emailError) {
-        console.error('Email sending error:', emailError)
+        console.error('Failed to send contact form emails:', emailError.message)
+        // Don't fail the request - lead is still saved in database
       }
     }
 
@@ -847,19 +884,20 @@ app.post('/api/waitlist', formLimiter, async (req, res) => {
 
     if (process.env.SMTP_USER) {
       try {
-        await transporter.sendMail({
-          from: process.env.SMTP_USER,
+        await sendEmailWithRetry({
+          from: `"Oakstratton Team"<${process.env.SMTP_USER}>`,
           to: email,
-          subject: 'Welcome to our waitlist!',
+          subject: 'Welcome to the Oakstratton BNPL Waitlist! 🎉',
           html: `
-            <h2>You're on the list! 🎉</h2>
-            <p>Thanks for joining the waitlist for BNPL solutions.</p>
-            <p>We'll send you early access and a special launch discount.</p>
-            <p>Best regards,<br>The Oakstratton Team</p>
+            <h2>You're on the list!</h2>
+            <p>Thanks for your interest in Oakstratton's BNPL solutions!</p>
+            <p>We'll notify you as soon as we launch, plus you'll get a special early adopter discount.</p>
+            <p>Best regards,<br><strong>The Oakstratton Team</strong></p>
           `,
         })
       } catch (emailError) {
-        console.error('Waitlist confirmation error:', emailError)
+        console.error('Failed to send waitlist confirmation email:', emailError.message)
+        // Don't fail the request - lead is still saved in database
       }
     }
 
