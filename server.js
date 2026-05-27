@@ -336,7 +336,6 @@ app.use(bodyParser.json({ limit: '10kb' }))
 app.use(bodyParser.urlencoded({ extended: true, limit: '10kb' }))
 
 // Serve static files (React build)
-import fs from 'fs'
 import { promises as fsPromises } from 'fs'
 
 const distPath = path.join(__dirname, 'dist')
