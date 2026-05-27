@@ -49,6 +49,7 @@ async function initializeDatabase() {
     // Seed default data
     await seedDefaultAdmin()
     await seedDefaultPlans()
+    await seedDefaultEmailTemplates()
   } catch (error) {
     console.warn('⚠️  Database schema initialization error:', error.message)
   }
@@ -90,6 +91,90 @@ async function seedDefaultPlans() {
     console.log('✓ Pricing plans sync completed')
   } catch (error) {
     console.warn('⚠️  Note: Plan seeding skipped (schema mismatch or database unavailable)')
+  }
+}
+
+// Seed default email templates
+async function seedDefaultEmailTemplates() {
+  try {
+    const templates = [
+      {
+        name: 'Welcome Email',
+        subject: 'Welcome to Oakstratton - Your BNPL Solution',
+        body: `<h2>Welcome to Oakstratton!</h2>
+<p>Hi {{name}},</p>
+<p>Thank you for your interest in our Buy Now Pay Later (BNPL) solutions. We're excited to help you provide flexible payment options to your customers.</p>
+<h3>What's Next?</h3>
+<ul>
+  <li>Explore our BNPL features</li>
+  <li>Review our pricing plans</li>
+  <li>Schedule a demo with our team</li>
+</ul>
+<p>If you have any questions, reply to this email or contact us at support@oakstratton.com</p>
+<p>Best regards,<br><strong>The Oakstratton Team</strong></p>`,
+      },
+      {
+        name: 'Payment Confirmation',
+        subject: 'Payment Confirmation - Oakstratton {{plan}}',
+        body: `<h2>Payment Received!</h2>
+<p>Hi {{name}},</p>
+<p>Thank you for your payment. Your {{plan}} plan is now active.</p>
+<h3>Account Details</h3>
+<p><strong>Company:</strong> {{company}}</p>
+<p><strong>Email:</strong> {{email}}</p>
+<p>You can now access your Oakstratton admin dashboard to start managing your BNPL integrations.</p>
+<p>Thank you for choosing Oakstratton!</p>
+<p>Best regards,<br><strong>The Oakstratton Team</strong></p>`,
+      },
+      {
+        name: 'Feature Update',
+        subject: 'New BNPL Features Available',
+        body: `<h2>Introducing New Features</h2>
+<p>Hi {{name}},</p>
+<p>We're constantly improving Oakstratton to serve you better. Check out our latest features:</p>
+<ul>
+  <li>Enhanced analytics dashboard</li>
+  <li>Improved payment processing</li>
+  <li>New BNPL provider integrations</li>
+  <li>Better customer reporting</li>
+</ul>
+<p>Log in to your dashboard to explore these new features and optimize your BNPL strategy.</p>
+<p>Questions? Contact our support team anytime.</p>
+<p>Best regards,<br><strong>The Oakstratton Team</strong></p>`,
+      },
+      {
+        name: 'Re-engagement Campaign',
+        subject: 'We miss you! Special offer inside',
+        body: `<h2>Come Back and Grow Your Business</h2>
+<p>Hi {{name}},</p>
+<p>We notice you haven't been using your Oakstratton account recently. We'd love to help you succeed with BNPL payments.</p>
+<h3>Special Offer</h3>
+<p>Get 30% off your next month when you upgrade your plan this week!</p>
+<p>Let us know if there's anything we can help you with or if you have any questions about our service.</p>
+<p>Best regards,<br><strong>The Oakstratton Team</strong></p>`,
+      },
+    ]
+
+    for (const template of templates) {
+      try {
+        const existing = await pool.query(
+          'SELECT id FROM email_templates WHERE name = $1',
+          [template.name]
+        )
+
+        if (existing.rows.length === 0) {
+          await pool.query(
+            'INSERT INTO email_templates (name, subject, html_content, category, is_active) VALUES ($1, $2, $3, $4, $5)',
+            [template.name, template.subject, template.body, 'custom', true]
+          )
+        }
+      } catch (err) {
+        // Silently skip individual template errors
+      }
+    }
+    console.log('✓ Default email templates seeded')
+  } catch (error) {
+    console.warn('⚠️  Note: Email template seeding skipped (schema mismatch or database unavailable)')
   }
 }
 
