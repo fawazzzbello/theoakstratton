@@ -194,6 +194,19 @@ CREATE TABLE IF NOT EXISTS testimonials (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Navigation menu items for dynamic header
+CREATE TABLE IF NOT EXISTS navigation_menu (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  label VARCHAR(100) NOT NULL,
+  href VARCHAR(255) NOT NULL,
+  icon VARCHAR(50),
+  parent_id UUID REFERENCES navigation_menu(id) ON DELETE CASCADE,
+  display_order INT DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -218,6 +231,9 @@ CREATE INDEX IF NOT EXISTS idx_email_campaigns_status ON email_campaigns(status)
 CREATE INDEX IF NOT EXISTS idx_email_campaigns_segment ON email_campaigns(segment);
 CREATE INDEX IF NOT EXISTS idx_campaign_sends_campaign_id ON campaign_sends(campaign_id);
 CREATE INDEX IF NOT EXISTS idx_campaign_sends_lead_id ON campaign_sends(lead_id);
+CREATE INDEX IF NOT EXISTS idx_navigation_menu_parent_id ON navigation_menu(parent_id);
+CREATE INDEX IF NOT EXISTS idx_navigation_menu_display_order ON navigation_menu(display_order);
+CREATE INDEX IF NOT EXISTS idx_navigation_menu_is_active ON navigation_menu(is_active);
 
 -- Create views for common queries
 CREATE OR REPLACE VIEW dashboard_stats AS

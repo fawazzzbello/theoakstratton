@@ -3,7 +3,6 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
-import nodemailer from 'nodemailer'
 import stripe from 'stripe'
 import axios from 'axios'
 import validator from 'validator'
@@ -12,6 +11,7 @@ import bcryptjs from 'bcryptjs'
 import pg from 'pg'
 import path from 'path'
 import fs from 'fs'
+import multer from 'multer'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 
@@ -52,6 +52,7 @@ async function initializeDatabase() {
     await seedDefaultEmailTemplates()
     await seedDefaultTestimonials()
     await seedDefaultLandingContent()
+    await seedDefaultNavigationMenu()
   } catch (error) {
     console.warn('⚠️  Database schema initialization error:', error.message)
   }
@@ -284,6 +285,36 @@ async function seedDefaultLandingContent() {
   }
 }
 
+// Seed default navigation menu
+async function seedDefaultNavigationMenu() {
+  try {
+    const menuItems = [
+      { label: 'Home', href: '/', icon: '🏠', order: 0 },
+      { label: 'Pricing', href: '#pricing', icon: '💳', order: 1 },
+      { label: 'Features', href: '#features', icon: '⭐', order: 2 },
+      { label: 'About', href: '#about', icon: 'ℹ️', order: 3 },
+      { label: 'Contact', href: '#contact', icon: '📧', order: 4 },
+    ]
+
+    for (const item of menuItems) {
+      const existing = await pool.query(
+        'SELECT id FROM navigation_menu WHERE label = $1',
+        [item.label]
+      )
+
+      if (existing.rows.length === 0) {
+        await pool.query(
+          'INSERT INTO navigation_menu (label, href, icon, display_order, is_active) VALUES ($1, $2, $3, $4, $5)',
+          [item.label, item.href, item.icon, item.order, true]
+        )
+      }
+    }
+    console.log('✓ Default navigation menu seeded')
+  } catch (error) {
+    console.warn('⚠️  Note: Navigation menu seeding skipped (schema mismatch or database unavailable)')
+  }
+}
+
 // Seed default admin user
 async function seedDefaultAdmin() {
   try {
@@ -335,6 +366,39 @@ app.use(
 app.use(bodyParser.json({ limit: '10kb' }))
 app.use(bodyParser.urlencoded({ extended: true, limit: '10kb' }))
 
+// File upload setup with multer
+const uploadsDir = path.join(__dirname, 'public', 'assets')
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true })
+}
+
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir)
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    const name = path.basename(file.originalname, ext)
+    const timestamp = Date.now()
+    cb(null, `${name}-${timestamp}${ext}`)
+  }
+})
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/x-icon']
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(new Error('Invalid file type. Only PNG, JPG, and ICO files are allowed.'), false)
+  }
+}
+
+const uploadMiddleware = multer({
+  storage: uploadStorage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB max
+})
+
 // Serve static files (React build)
 import { promises as fsPromises } from 'fs'
 
@@ -384,47 +448,10 @@ const formLimiter = rateLimit({
 app.use('/api/', apiLimiter)
 
 // ============================================================================
-// SMTP SETUP - Outlook/Office365 Compatible
+// EMAIL FUNCTIONALITY DISABLED
 // ============================================================================
-
-const smtpConfig = {
-  host: process.env.SMTP_HOST || 'smtp.office365.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: process.env.SMTP_SECURE === 'true' ? true : false,
-  auth: process.env.SMTP_USER ? {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  } : undefined,
-}
-
-// Add TLS options for better compatibility
-if (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('office365')) {
-  smtpConfig.tls = {
-    ciphers: 'SSLv3',
-    rejectUnauthorized: false,
-  }
-}
-
-const transporter = nodemailer.createTransport(smtpConfig)
-
-// Verify SMTP asynchronously without blocking startup
-if (process.env.SMTP_USER) {
-  const smtpVerifyTimeout = setTimeout(() => {
-    console.warn('⚠️  SMTP verification timeout. Email services may not work.')
-  }, 5000)
-
-  transporter.verify((error, success) => {
-    clearTimeout(smtpVerifyTimeout)
-    if (error) {
-      console.error('❌ SMTP Configuration Error:', error.message)
-      console.warn('⚠️  Email functionality disabled. Check SMTP credentials.')
-    } else if (success) {
-      console.log('✓ SMTP connection successful. Email services ready.')
-    }
-  })
-} else {
-  console.log('ℹ️  SMTP not configured. Email functionality disabled.')
-}
+// Form submissions (contact, waitlist) are saved directly to the admin dashboard
+// No email notifications are sent. All submissions appear as leads for admin review.
 
 // ============================================================================
 // AUTHENTICATION MIDDLEWARE
@@ -467,28 +494,7 @@ function escapeHtml(text) {
   return text.replace(/[&<>"']/g, (m) => map[m])
 }
 
-// Send email with retry logic
-async function sendEmailWithRetry(mailOptions, maxRetries = 3) {
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      const result = await transporter.sendMail(mailOptions)
-      console.log(`✓ Email sent successfully to ${mailOptions.to}`)
-      return result
-    } catch (error) {
-      console.error(`Email attempt ${attempt}/${maxRetries} failed for ${mailOptions.to}:`, error.message)
-
-      if (attempt < maxRetries) {
-        // Wait before retrying (exponential backoff)
-        const waitTime = Math.pow(2, attempt - 1) * 1000
-        console.log(`Retrying in ${waitTime}ms...`)
-        await new Promise(resolve => setTimeout(resolve, waitTime))
-      } else {
-        console.error(`Failed to send email to ${mailOptions.to} after ${maxRetries} attempts`)
-        throw error
-      }
-    }
-  }
-}
+// Email functionality disabled - all form submissions saved directly to admin dashboard
 
 // ============================================================================
 // AUTHENTICATION ENDPOINTS
@@ -1519,6 +1525,131 @@ app.get('/api/payment-methods', (req, res) => {
 })
 
 // ============================================================================
+// NAVIGATION MENU ENDPOINTS
+// ============================================================================
+
+app.get('/api/navigation-menu', async (req, res) => {
+  try {
+    if (databaseAvailable) {
+      const result = await pool.query(
+        'SELECT id, label, href, icon, parent_id, display_order FROM navigation_menu WHERE is_active = true ORDER BY display_order ASC'
+      )
+      return res.json(result.rows)
+    }
+    res.json([])
+  } catch (error) {
+    console.error('Get navigation menu error:', error)
+    res.status(500).json({ error: 'Failed to fetch navigation menu' })
+  }
+})
+
+app.post('/api/admin/navigation-menu', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+
+    const { label, href, icon, parent_id } = req.body
+
+    if (!label || !href) {
+      return res.status(400).json({ error: 'Label and href are required' })
+    }
+
+    if (databaseAvailable) {
+      const maxOrder = await pool.query(
+        'SELECT COALESCE(MAX(display_order), 0) as max_order FROM navigation_menu'
+      )
+      const displayOrder = maxOrder.rows[0].max_order + 1
+
+      const result = await pool.query(
+        'INSERT INTO navigation_menu (label, href, icon, parent_id, display_order) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [label, href, icon || null, parent_id || null, displayOrder]
+      )
+      return res.json(result.rows[0])
+    }
+    res.status(500).json({ error: 'Database not available' })
+  } catch (error) {
+    console.error('Create navigation menu error:', error)
+    res.status(500).json({ error: 'Failed to create menu item' })
+  }
+})
+
+app.put('/api/admin/navigation-menu/:id', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+
+    const { id } = req.params
+    const { label, href, icon, parent_id, display_order, is_active } = req.body
+
+    if (databaseAvailable) {
+      const result = await pool.query(
+        'UPDATE navigation_menu SET label = $1, href = $2, icon = $3, parent_id = $4, display_order = $5, is_active = $6 WHERE id = $7 RETURNING *',
+        [label, href, icon || null, parent_id || null, display_order, is_active !== false, id]
+      )
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Menu item not found' })
+      }
+
+      return res.json(result.rows[0])
+    }
+    res.status(500).json({ error: 'Database not available' })
+  } catch (error) {
+    console.error('Update navigation menu error:', error)
+    res.status(500).json({ error: 'Failed to update menu item' })
+  }
+})
+
+app.delete('/api/admin/navigation-menu/:id', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+
+    const { id } = req.params
+
+    if (databaseAvailable) {
+      await pool.query('DELETE FROM navigation_menu WHERE id = $1', [id])
+      return res.json({ success: true, message: 'Menu item deleted' })
+    }
+    res.status(500).json({ error: 'Database not available' })
+  } catch (error) {
+    console.error('Delete navigation menu error:', error)
+    res.status(500).json({ error: 'Failed to delete menu item' })
+  }
+})
+
+app.post('/api/admin/navigation-menu/reorder', authenticateToken, async (req, res) => {
+  try {
+    if (!req.user || (req.user.role !== 'admin' && req.user.role !== 'manager')) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+
+    const { items } = req.body
+
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'Items must be an array' })
+    }
+
+    if (databaseAvailable) {
+      for (let i = 0; i < items.length; i++) {
+        await pool.query(
+          'UPDATE navigation_menu SET display_order = $1 WHERE id = $2',
+          [i, items[i].id]
+        )
+      }
+      return res.json({ success: true, message: 'Menu reordered successfully' })
+    }
+    res.status(500).json({ error: 'Database not available' })
+  } catch (error) {
+    console.error('Reorder navigation menu error:', error)
+    res.status(500).json({ error: 'Failed to reorder menu' })
+  }
+})
+
+// ============================================================================
 // ADMIN DATA MANAGEMENT ENDPOINTS (Clear Demo Data)
 // ============================================================================
 
@@ -1586,68 +1717,30 @@ app.post('/api/admin/clear-analytics', authenticateToken, async (req, res) => {
 // FILE UPLOAD ENDPOINTS
 // ============================================================================
 
-app.post('/api/admin/upload-asset', authenticateToken, async (req, res) => {
+app.post('/api/admin/upload-asset', authenticateToken, uploadMiddleware.single('file'), (req, res) => {
   try {
     if (!req.user || req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Unauthorized' })
     }
 
-    // Get raw body for file upload
-    let chunks = []
-    req.on('data', chunk => chunks.push(chunk))
-    req.on('end', async () => {
-      try {
-        const body = Buffer.concat(chunks).toString('utf-8')
-        const boundary = req.headers['content-type'].split('boundary=')[1]
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file provided' })
+    }
 
-        // Simple multipart form-data parser
-        const parts = body.split(`--${boundary}`)
-        let fileData = null
-        let filename = null
-        let fileType = null
+    const assetType = req.body.type || 'asset'
+    const fileUrl = `/assets/${req.file.filename}`
 
-        for (const part of parts) {
-          if (part.includes('filename=')) {
-            const filenameMatch = part.match(/filename="([^"]+)"/)
-            if (filenameMatch) filename = filenameMatch[1]
-
-            const typeMatch = part.match(/name="type".*?\r\n\r\n([^\r\n]+)/)
-            if (typeMatch) fileType = typeMatch[1]
-
-            const fileContent = part.split('\r\n\r\n')[1]?.split('\r\n--')[0]
-            if (fileContent) fileData = fileContent
-          }
-        }
-
-        if (!fileData || !filename || !fileType) {
-          return res.status(400).json({ error: 'File upload failed' })
-        }
-
-        // Save file to public folder
-        const publicPath = path.join(__dirname, 'public', 'assets')
-        if (!fs.existsSync(publicPath)) {
-          fs.mkdirSync(publicPath, { recursive: true })
-        }
-
-        let filepath
-        if (fileType === 'logo') {
-          filepath = path.join(publicPath, 'logo.png')
-        } else if (fileType === 'favicon') {
-          filepath = path.join(publicPath, 'favicon.ico')
-        } else {
-          return res.status(400).json({ error: 'Invalid file type' })
-        }
-
-        fs.writeFileSync(filepath, Buffer.from(fileData, 'binary'))
-        res.json({ success: true, message: `${fileType} uploaded successfully`, path: `/assets/${path.basename(filepath)}` })
-      } catch (parseErr) {
-        console.error('File parse error:', parseErr)
-        res.status(500).json({ error: 'Failed to parse file upload' })
-      }
+    res.json({
+      success: true,
+      message: `${assetType} uploaded successfully`,
+      filename: req.file.filename,
+      url: fileUrl,
+      size: req.file.size,
+      type: assetType
     })
   } catch (error) {
     console.error('Upload asset error:', error)
-    res.status(500).json({ error: 'Failed to upload asset' })
+    res.status(500).json({ error: error.message || 'Failed to upload asset' })
   }
 })
 
