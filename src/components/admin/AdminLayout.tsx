@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/contexts/AuthContext'
@@ -9,9 +9,23 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      if (mobile) {
+        setSidebarOpen(false)
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const navItems = [
     { label: 'Dashboard', icon: '📊', path: '/admin/dashboard' },
@@ -34,6 +48,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex h-screen bg-light">
+      {/* Overlay for mobile */}
+      {isMobile && sidebarOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        />
+      )}
+
       {/* Sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -42,7 +67,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ duration: 0.3 }}
-            className="w-64 bg-dark border-r border-gray-800 flex flex-col"
+            className={`${
+              isMobile ? 'fixed left-0 top-0 h-screen z-50 w-64' : 'w-64'
+            } bg-dark border-r border-gray-800 flex flex-col`}
           >
             {/* Logo */}
             <div className="p-6 border-b border-gray-800">
@@ -97,17 +124,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 shadow-soft">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
+          <div className={`flex items-center justify-between ${isMobile ? 'px-4 py-3' : 'px-6 py-4'}`}>
+            <div className="flex items-center gap-3 md:gap-4 min-w-0">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="text-2xl text-gray-600 hover:text-primary-500"
+                className="text-2xl text-gray-600 hover:text-primary-500 flex-shrink-0"
               >
                 {sidebarOpen ? '⊗' : '☰'}
               </motion.button>
-              <h1 className="text-2xl font-bold text-dark">
+              <h1 className={`font-bold text-dark truncate ${isMobile ? 'text-lg' : 'text-2xl'}`}>
                 {navItems.find((item) => isActive(item.path))?.label || 'Dashboard'}
               </h1>
             </div>
@@ -116,7 +143,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex items-center gap-4">
               <motion.button
                 whileHover={{ scale: 1.05 }}
-                className="relative p-2 text-gray-600 hover:text-primary-500"
+                className="relative p-2 md:p-3 text-gray-600 hover:text-primary-500 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 🔔
                 <span className="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
@@ -127,7 +154,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         {/* Content */}
         <main className="flex-1 overflow-auto">
-          <div className="p-6">{children}</div>
+          <div className={isMobile ? 'p-4' : 'p-6'}>{children}</div>
         </main>
       </div>
     </div>

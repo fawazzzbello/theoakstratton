@@ -2,48 +2,57 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import api from '@/services/api'
 
-interface Slide {
-  id: number
+interface HeroSlide {
+  id: string
   title: string
   subtitle: string
-  stat1: { value: string; label: string }
-  stat2: { value: string; label: string }
-  stat3: { value: string; label: string }
-  gradient: string
+  stat1: string
+  stat2: string
+  stat3: string
+  backgroundType: 'gradient' | 'image'
+  backgroundGradient?: string
+  backgroundImage?: string
+  displayOrder: number
 }
 
-const defaultSlides: Slide[] = [
+const defaultSlides: HeroSlide[] = [
   {
-    id: 1,
+    id: '1',
     title: 'Help Your Customers Buy More',
     subtitle: 'Offer BNPL payment plans with zero upfront cost and immediate payment to you',
-    stat1: { value: '+30%', label: 'Conversion Increase' },
-    stat2: { value: '+40%', label: 'Average Order Value' },
-    stat3: { value: '7 days', label: 'Setup Time' },
-    gradient: 'from-primary-500 to-secondary-500',
+    stat1: '+30% Conversion Increase',
+    stat2: '+40% Average Order Value',
+    stat3: '7 days Setup Time',
+    backgroundType: 'gradient',
+    backgroundGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    displayOrder: 0,
   },
   {
-    id: 2,
+    id: '2',
     title: 'No Risk to You',
     subtitle: 'Get paid immediately while BNPL providers handle all credit risk and repayment',
-    stat1: { value: '100%', label: 'Payment Guaranteed' },
-    stat2: { value: '0%', label: 'Credit Risk' },
-    stat3: { value: '24hrs', label: 'Settlement Time' },
-    gradient: 'from-secondary-500 to-primary-500',
+    stat1: '100% Payment Guaranteed',
+    stat2: '0% Credit Risk',
+    stat3: '24hrs Settlement Time',
+    backgroundType: 'gradient',
+    backgroundGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    displayOrder: 1,
   },
   {
-    id: 3,
+    id: '3',
     title: 'Multiple Payment Options',
     subtitle: 'Let customers choose from Klarna, Clearpay, PayPal and card payments',
-    stat1: { value: '4+', label: 'Payment Methods' },
-    stat2: { value: '50M+', label: 'Active Users' },
-    stat3: { value: '$2B+', label: 'Transaction Volume' },
-    gradient: 'from-accent-500 via-primary-500 to-secondary-500',
+    stat1: '4+ Payment Methods',
+    stat2: '50M+ Active Users',
+    stat3: '$2B+ Transaction Volume',
+    backgroundType: 'gradient',
+    backgroundGradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    displayOrder: 2,
   },
 ]
 
 export default function Hero3DSlider() {
-  const [slides, setSlides] = useState<Slide[]>(defaultSlides)
+  const [slides, setSlides] = useState<HeroSlide[]>(defaultSlides)
   const [current, setCurrent] = useState(0)
   const [direction, setDirection] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -132,7 +141,14 @@ export default function Hero3DSlider() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className={`absolute inset-0 bg-gradient-to-br ${slide.gradient}`}
+          className="absolute inset-0"
+          style={{
+            background: slide.backgroundType === 'gradient'
+              ? slide.backgroundGradient
+              : `url(${slide.backgroundImage})`,
+            backgroundSize: slide.backgroundType === 'image' ? 'cover' : 'auto',
+            backgroundPosition: 'center',
+          }}
         />
 
         {/* Animated orbs */}
@@ -193,17 +209,21 @@ export default function Hero3DSlider() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="grid grid-cols-3 gap-4 mb-12 max-w-2xl mx-auto"
+              className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12 max-w-2xl mx-auto"
             >
-              {[slide.stat1, slide.stat2, slide.stat3].map((stat, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 hover:bg-white/20 transition-all"
-                >
-                  <div className="text-3xl md:text-4xl font-bold mb-2">{stat.value}</div>
-                  <div className="text-sm opacity-90">{stat.label}</div>
-                </div>
-              ))}
+              {[slide.stat1, slide.stat2, slide.stat3].map((stat, idx) => {
+                const [value, ...labelParts] = stat.split(' ')
+                const label = labelParts.join(' ')
+                return (
+                  <div
+                    key={idx}
+                    className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg p-6 hover:bg-white/20 transition-all"
+                  >
+                    <div className="text-3xl md:text-4xl font-bold mb-2">{value}</div>
+                    <div className="text-sm opacity-90">{label}</div>
+                  </div>
+                )
+              })}
             </motion.div>
 
             {/* CTA Buttons */}

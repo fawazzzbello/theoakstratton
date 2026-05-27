@@ -11,9 +11,12 @@ import bcryptjs from 'bcryptjs'
 import pg from 'pg'
 import path from 'path'
 import fs from 'fs'
-import multer from 'multer'
 import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
 import dotenv from 'dotenv'
+
+const require = createRequire(import.meta.url)
+const multer = require('multer')
 
 dotenv.config()
 

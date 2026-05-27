@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import AdminLayout from '@/components/admin/AdminLayout'
+import HeroSliderEditor from '@/components/admin/HeroSliderEditor'
 import { useAlert } from '@/contexts/AlertContext'
 import api from '@/services/api'
 
@@ -12,6 +13,19 @@ interface ContentSection {
 
 interface LandingContent {
   [section: string]: ContentSection
+}
+
+interface HeroSlide {
+  id: string
+  title: string
+  subtitle: string
+  stat1: string
+  stat2: string
+  stat3: string
+  backgroundType: 'gradient' | 'image'
+  backgroundGradient?: string
+  backgroundImage?: string
+  displayOrder: number
 }
 
 const sections = [
@@ -96,10 +110,29 @@ export default function ContentManagementPage() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         <h2 className="text-3xl font-bold text-dark">Content Management</h2>
 
+        {/* Section Navigation - Mobile Horizontal Scroll */}
+        <div className="lg:hidden">
+          <div className="card p-2 overflow-x-auto flex gap-2">
+            {sections.map((section) => (
+              <motion.button
+                key={section.id}
+                onClick={() => setActiveSection(section.id)}
+                className={`px-4 py-2 rounded-lg font-medium text-sm whitespace-nowrap transition-all ${
+                  activeSection === section.id
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {section.label}
+              </motion.button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Section Navigation */}
-          <div className="lg:col-span-1">
-            <div className="card p-4 space-y-2">
+          {/* Section Navigation - Desktop Sidebar */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="card p-4 space-y-2 sticky top-20">
               {sections.map((section) => (
                 <motion.button
                   key={section.id}
@@ -126,6 +159,32 @@ export default function ContentManagementPage() {
                 {currentSection.fields.map((fieldKey) => {
                   const isJsonField = fieldKey.includes('content')
                   const value = currentContent[fieldKey] as string || ''
+                  const isHeroSection = activeSection === 'hero' && fieldKey === 'hero_content'
+
+                  if (isHeroSection) {
+                    let slides: HeroSlide[] = []
+                    try {
+                      slides = value ? JSON.parse(value) : []
+                    } catch (e) {
+                      slides = []
+                    }
+
+                    return (
+                      <motion.div key={fieldKey} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-700 mb-4 capitalize">
+                          {fieldKey.replace(/_/g, ' ')}
+                        </label>
+                        <HeroSliderEditor
+                          slides={slides}
+                          onSlidesChange={(updatedSlides) => {
+                            handleContentChange(fieldKey, JSON.stringify(updatedSlides))
+                          }}
+                          onSave={() => handleSave(fieldKey)}
+                          isSaving={saving}
+                        />
+                      </motion.div>
+                    )
+                  }
 
                   return (
                     <motion.div key={fieldKey} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
