@@ -131,6 +131,19 @@ export default function Hero3DSlider() {
 
   const slide = slides[current]
 
+  if (!slide) {
+    return (
+      <section className="relative min-h-screen pt-20 bg-gradient-to-br from-primary-500 to-secondary-500 animate-pulse">
+        <div className="relative container py-20 h-full flex flex-col justify-center">
+          <div className="text-center text-white">
+            <div className="h-16 bg-white/20 rounded mb-6 max-w-2xl mx-auto"></div>
+            <div className="h-8 bg-white/20 rounded mb-12 max-w-2xl mx-auto"></div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="relative min-h-screen pt-20 overflow-hidden">
       {/* Animated Background */}
