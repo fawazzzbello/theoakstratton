@@ -39,7 +39,7 @@ export default function WaitlistSection() {
           className="max-w-2xl mx-auto text-center"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-dark mb-4">
-            Join Our Waitlist
+            Join Our Newsletter
           </h2>
           <p className="text-xl text-gray-600 mb-8">
             Be the first to know when we launch new features and BNPL provider integrations.
