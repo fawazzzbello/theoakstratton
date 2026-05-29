@@ -60,9 +60,11 @@ async function initializeDatabase() {
       await seedDefaultPlans()
       await seedDefaultEmailTemplates()
       await seedDefaultTestimonials()
-      await seedDefaultLandingContent()
       await seedDefaultNavigationMenu()
     }
+
+    // Always seed essential landing content for dashboard to work
+    await seedDefaultLandingContent()
   } catch (error) {
     console.warn('⚠️  Database schema initialization error:', error.message)
   }
@@ -1486,11 +1488,16 @@ app.post('/api/webhooks/stripe', async (req, res) => {
 
 function getLandingContentDefaults() {
   return {
-    hero: {
-      hero_title: 'Modern BNPL Solutions for Your Business',
-      hero_subtitle: 'Empower customers with flexible payment options. Increase conversion rates by up to 30%.',
-      hero_cta: 'Get Started Today',
-    },
+    hero: { hero_content: JSON.stringify([{ id: 1, title: 'Flexible Payment Solutions for Your Customers', subtitle: 'Enable Buy Now Pay Later with Oakstratton' }]) },
+    features: { features_content: JSON.stringify([{ id: 1, title: 'Easy Integration', description: 'Connect in minutes', icon: '⚡' }]) },
+    providers: { providers_content: JSON.stringify([{ id: 1, name: 'Klarna', fee: '2.49%' }]) },
+    testimonials: { testimonials_content: JSON.stringify([{ id: 1, quote: 'Great solution', author: 'User' }]) },
+    footer: { footer_content: JSON.stringify({ tagline: 'Oakstratton Solutions' }) },
+    branding: { branding: JSON.stringify({ logoType: 'text', logoText: 'Oakstratton' }) },
+    pricing: { pricing_title: 'Simple, Transparent Pricing', pricing_subtitle: 'Choose your plan' },
+    waitlist: { waitlist_title: 'Join Waitlist', waitlist_description: 'Be first to know' },
+    contact: { contact_title: 'Get In Touch', contact_description: 'Contact us' },
+    cta: { cta_content: JSON.stringify([{ id: 1, title: 'Ready to get started?', description: 'Start your free trial' }]) },
   }
 }
 
