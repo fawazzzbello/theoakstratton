@@ -35,86 +35,32 @@ export default function AdminDashboard() {
 
       const parsed: DashboardContent = {}
 
-      // Parse all content sections
-      if (data.hero_content) {
-        try {
-          parsed.hero = JSON.parse(data.hero_content)
-        } catch (e) {
-          parsed.hero = []
-        }
+      // Parse all content sections with proper fallbacks
+      parsed.hero = data.hero_content ? tryParse(data.hero_content) : []
+      parsed.features = data.features_content ? tryParse(data.features_content) : []
+      parsed.providers = data.providers_content ? tryParse(data.providers_content) : []
+      parsed.testimonials = data.testimonials_content ? tryParse(data.testimonials_content) : []
+      parsed.footer = data.footer_content ? tryParse(data.footer_content) : {}
+      parsed.branding = data.branding ? tryParse(data.branding) : {
+        logoType: 'text',
+        logoText: 'Oakstratton',
+        logoUrl: '',
+        faviconUrl: '',
       }
 
-      if (data.features_content) {
-        try {
-          parsed.features = JSON.parse(data.features_content)
-        } catch (e) {
-          parsed.features = []
-        }
+      parsed.pricing = {
+        title: data.pricing_title || '',
+        subtitle: data.pricing_subtitle || '',
       }
 
-      if (data.providers_content) {
-        try {
-          parsed.providers = JSON.parse(data.providers_content)
-        } catch (e) {
-          parsed.providers = []
-        }
+      parsed.waitlist = {
+        title: data.waitlist_title || '',
+        description: data.waitlist_description || '',
       }
 
-      if (data.testimonials_content) {
-        try {
-          parsed.testimonials = JSON.parse(data.testimonials_content)
-        } catch (e) {
-          parsed.testimonials = []
-        }
-      }
-
-      if (data.pricing_title || data.pricing_subtitle) {
-        parsed.pricing = {
-          title: data.pricing_title,
-          subtitle: data.pricing_subtitle,
-        }
-      }
-
-      if (data.footer_content) {
-        try {
-          parsed.footer = JSON.parse(data.footer_content)
-        } catch (e) {
-          parsed.footer = {}
-        }
-      }
-
-      if (data.waitlist_title || data.waitlist_description) {
-        parsed.waitlist = {
-          title: data.waitlist_title,
-          description: data.waitlist_description,
-        }
-      }
-
-      if (data.contact_title || data.contact_description) {
-        parsed.contact = {
-          title: data.contact_title,
-          description: data.contact_description,
-        }
-      }
-
-      if (data.branding) {
-        try {
-          parsed.branding = JSON.parse(data.branding)
-        } catch (e) {
-          parsed.branding = {
-            logoType: 'text',
-            logoText: 'Oakstratton',
-            logoUrl: '',
-            faviconUrl: '',
-          }
-        }
-      } else {
-        parsed.branding = {
-          logoType: 'text',
-          logoText: 'Oakstratton',
-          logoUrl: '',
-          faviconUrl: '',
-        }
+      parsed.contact = {
+        title: data.contact_title || '',
+        description: data.contact_description || '',
       }
 
       setContent(parsed)
@@ -126,6 +72,17 @@ export default function AdminDashboard() {
     }
   }
 
+  const tryParse = (value: any) => {
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value)
+      } catch (e) {
+        return value
+      }
+    }
+    return value || {}
+  }
+
   const saveContent = async (field: string, value: any) => {
     try {
       setSaving(true)
@@ -133,7 +90,10 @@ export default function AdminDashboard() {
         contentValue: typeof value === 'string' ? value : JSON.stringify(value),
         contentType: 'text',
       })
-      success('Content updated successfully')
+      success(`${field} saved successfully`)
+      // Refresh content to ensure it's persisted correctly
+      await new Promise(resolve => setTimeout(resolve, 500))
+      await fetchAllContent()
     } catch (err) {
       error('Failed to save content')
       console.error(err)
@@ -157,28 +117,28 @@ export default function AdminDashboard() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-dark mb-2">Content Dashboard</h1>
-          <p className="text-gray-600">Manage all landing page content with visual editors</p>
+          <h1 className="text-4xl font-bold text-dark mb-2">Content Management Dashboard</h1>
+          <p className="text-gray-600">Edit all landing page content with visual editors. Changes are saved to database immediately.</p>
         </div>
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 p-4 bg-white rounded-lg border border-gray-200 overflow-x-auto">
           {[
-            { id: 'branding', label: '🎨 Branding', icon: '🎨' },
-            { id: 'hero', label: '🎯 Hero Slider', icon: '🎯' },
-            { id: 'features', label: '✨ Features', icon: '✨' },
-            { id: 'providers', label: '💳 Providers', icon: '💳' },
-            { id: 'testimonials', label: '⭐ Testimonials', icon: '⭐' },
-            { id: 'pricing', label: '💰 Pricing', icon: '💰' },
-            { id: 'waitlist', label: '📧 Waitlist', icon: '📧' },
-            { id: 'contact', label: '💬 Contact', icon: '💬' },
-            { id: 'footer', label: '🔗 Footer', icon: '🔗' },
+            { id: 'branding', label: '🎨 Branding' },
+            { id: 'hero', label: '🎯 Hero Slider' },
+            { id: 'features', label: '✨ Features' },
+            { id: 'providers', label: '💳 Providers' },
+            { id: 'testimonials', label: '⭐ Testimonials' },
+            { id: 'pricing', label: '💰 Pricing' },
+            { id: 'waitlist', label: '📧 Waitlist' },
+            { id: 'contact', label: '💬 Contact' },
+            { id: 'footer', label: '🔗 Footer' },
           ].map((tab) => (
             <motion.button
               key={tab.id}
               whileHover={{ scale: 1.05 }}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all capitalize ${
+              className={`px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
                 activeTab === tab.id
                   ? 'bg-primary-500 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -206,9 +166,41 @@ export default function AdminDashboard() {
   )
 }
 
-// Branding Editor
+// Branding Editor with File Upload
 function BrandingEditor({ content, onSave }: any) {
   const [branding, setBranding] = useState(content || { logoType: 'text', logoText: 'Oakstratton', logoUrl: '', faviconUrl: '' })
+  const [uploading, setUploading] = useState(false)
+  const { success, error } = useAlert()
+
+  const handleFileUpload = async (file: File, fileType: 'logo' | 'favicon') => {
+    if (!file) return
+
+    try {
+      setUploading(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('type', fileType)
+
+      const response = await api.post('/api/admin/upload-asset', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+
+      if (response.data.url) {
+        const updatedBranding = fileType === 'logo'
+          ? { ...branding, logoUrl: response.data.url, logoType: 'image' }
+          : { ...branding, faviconUrl: response.data.url }
+
+        setBranding(updatedBranding)
+        success(`${fileType === 'logo' ? 'Logo' : 'Favicon'} uploaded successfully`)
+
+        await onSave('branding', updatedBranding)
+      }
+    } catch (err: any) {
+      error(err.response?.data?.error || 'Upload failed')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
@@ -254,14 +246,28 @@ function BrandingEditor({ content, onSave }: any) {
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Logo Image URL</label>
-                <input
-                  type="text"
-                  value={branding.logoUrl}
-                  onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
-                  placeholder="https://example.com/logo.png"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Logo Image</label>
+                <div className="space-y-3">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={uploading}
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) {
+                        handleFileUpload(e.target.files[0], 'logo')
+                      }
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                  />
+                  <p className="text-xs text-gray-500">Or paste URL:</p>
+                  <input
+                    type="text"
+                    value={branding.logoUrl}
+                    onChange={(e) => setBranding({ ...branding, logoUrl: e.target.value })}
+                    placeholder="https://example.com/logo.png"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
                 {branding.logoUrl && (
                   <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <p className="text-xs text-gray-600 mb-2">Preview:</p>
@@ -278,8 +284,20 @@ function BrandingEditor({ content, onSave }: any) {
           <h2 className="text-2xl font-bold text-dark mb-6">Favicon Settings</h2>
 
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Favicon URL</label>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Favicon File</label>
+            <div className="space-y-3">
+              <input
+                type="file"
+                accept="image/x-icon,image/png,.ico"
+                disabled={uploading}
+                onChange={(e) => {
+                  if (e.target.files?.[0]) {
+                    handleFileUpload(e.target.files[0], 'favicon')
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+              />
+              <p className="text-xs text-gray-500">Or paste URL:</p>
               <input
                 type="text"
                 value={branding.faviconUrl}
@@ -287,7 +305,7 @@ function BrandingEditor({ content, onSave }: any) {
                 placeholder="https://example.com/favicon.ico"
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
-              <p className="text-xs text-gray-500 mt-2">Use a 32x32 PNG or ICO file for best results</p>
+              <p className="text-xs text-gray-500">Use a 32x32 PNG or ICO file for best results</p>
             </div>
 
             {branding.faviconUrl && (
@@ -303,9 +321,10 @@ function BrandingEditor({ content, onSave }: any) {
       <motion.button
         whileHover={{ scale: 1.05 }}
         onClick={() => onSave('branding', branding)}
-        className="btn btn-primary w-full"
+        disabled={uploading}
+        className="btn btn-primary w-full disabled:opacity-50"
       >
-        Save Branding Settings
+        {uploading ? 'Uploading...' : 'Save Branding Settings'}
       </motion.button>
     </motion.div>
   )
@@ -331,6 +350,10 @@ function HeroEditor({ content, onSave }: any) {
     ])
   }
 
+  const deleteSlide = (idx: number) => {
+    setSlides(slides.filter((_, i) => i !== idx))
+  }
+
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div className="flex justify-between items-center">
@@ -347,7 +370,15 @@ function HeroEditor({ content, onSave }: any) {
       <div className="space-y-4">
         {slides.map((slide: any, idx: number) => (
           <motion.div key={slide.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-6">
-            <h3 className="text-lg font-bold text-dark mb-4">Slide {idx + 1}</h3>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-bold text-dark">Slide {idx + 1}</h3>
+              <button
+                onClick={() => deleteSlide(idx)}
+                className="text-red-500 hover:text-red-700 text-xl font-bold"
+              >
+                ✕
+              </button>
+            </div>
             <div className="space-y-4">
               <input
                 type="text"
@@ -408,33 +439,32 @@ function FeaturesEditor({ content, onSave }: any) {
   const [features, setFeatures] = useState(content || [])
 
   const addFeature = () => {
-    setFeatures([
-      ...features,
-      {
-        icon: '✨',
-        title: 'New Feature',
-        description: 'Feature description',
-      },
-    ])
+    setFeatures([...features, { icon: '✨', title: 'New Feature', description: 'Feature description' }])
+  }
+
+  const deleteFeature = (idx: number) => {
+    setFeatures(features.filter((_, i) => i !== idx))
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-dark">Features</h2>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={addFeature}
-          className="btn btn-primary btn-sm"
-        >
+        <motion.button whileHover={{ scale: 1.05 }} onClick={addFeature} className="btn btn-primary btn-sm">
           + Add Feature
         </motion.button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {features.map((feature: any, idx: number) => (
-          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
-            <div className="space-y-3">
+          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4 relative">
+            <button
+              onClick={() => deleteFeature(idx)}
+              className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-lg font-bold"
+            >
+              ✕
+            </button>
+            <div className="space-y-3 pr-8">
               <div className="text-4xl">{feature.icon}</div>
               <input
                 type="text"
@@ -492,34 +522,33 @@ function ProvidersEditor({ content, onSave }: any) {
   const addProvider = () => {
     setProviders([
       ...providers,
-      {
-        name: 'New Provider',
-        fee: '2.99%',
-        terms: '4 installments',
-        users: '10M+',
-        description: 'Provider description',
-        color: 'from-blue-500 to-cyan-500',
-      },
+      { name: 'New Provider', fee: '2.99%', terms: '4 installments', users: '10M+', description: 'Provider description', color: 'from-blue-500 to-cyan-500' },
     ])
+  }
+
+  const deleteProvider = (idx: number) => {
+    setProviders(providers.filter((_, i) => i !== idx))
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-dark">BNPL Providers</h2>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={addProvider}
-          className="btn btn-primary btn-sm"
-        >
+        <motion.button whileHover={{ scale: 1.05 }} onClick={addProvider} className="btn btn-primary btn-sm">
           + Add Provider
         </motion.button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {providers.map((provider: any, idx: number) => (
-          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
-            <div className="space-y-3">
+          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4 relative">
+            <button
+              onClick={() => deleteProvider(idx)}
+              className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-lg font-bold"
+            >
+              ✕
+            </button>
+            <div className="space-y-3 pr-8">
               <input
                 type="text"
                 value={provider.name}
@@ -598,34 +627,32 @@ function TestimonialsEditor({ content, onSave }: any) {
   const [testimonials, setTestimonials] = useState(content || [])
 
   const addTestimonial = () => {
-    setTestimonials([
-      ...testimonials,
-      {
-        quote: 'Amazing service!',
-        author: 'Customer Name',
-        role: 'Title',
-        rating: 5,
-      },
-    ])
+    setTestimonials([...testimonials, { quote: 'Amazing service!', author: 'Customer Name', role: 'Title', rating: 5 }])
+  }
+
+  const deleteTestimonial = (idx: number) => {
+    setTestimonials(testimonials.filter((_, i) => i !== idx))
   }
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold text-dark">Testimonials</h2>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          onClick={addTestimonial}
-          className="btn btn-primary btn-sm"
-        >
+        <motion.button whileHover={{ scale: 1.05 }} onClick={addTestimonial} className="btn btn-primary btn-sm">
           + Add Testimonial
         </motion.button>
       </div>
 
       <div className="space-y-4">
         {testimonials.map((testimonial: any, idx: number) => (
-          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4">
-            <div className="space-y-3">
+          <motion.div key={idx} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card p-4 relative">
+            <button
+              onClick={() => deleteTestimonial(idx)}
+              className="absolute top-4 right-4 text-red-500 hover:text-red-700 text-lg font-bold"
+            >
+              ✕
+            </button>
+            <div className="space-y-3 pr-8">
               <div className="flex gap-1 mb-2">
                 {Array(5).fill(null).map((_, i) => (
                   <button
