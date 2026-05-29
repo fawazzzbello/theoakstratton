@@ -87,9 +87,9 @@ async function runMigrations() {
 async function seedDefaultPlans() {
   try {
     const plans = [
-      { id: 'starter', name: 'Starter', description: 'Perfect for small businesses', price_gbp: 29900, features: ['Basic BNPL', 'Up to 100 customers', 'Email support'], display_order: 1 },
-      { id: 'growth', name: 'Growth', description: 'For growing companies', price_gbp: 59900, features: ['Advanced BNPL', 'Up to 1000 customers', 'Priority support', 'Analytics'], display_order: 2 },
-      { id: 'premium', name: 'Premium', description: 'Enterprise solution', price_gbp: 119900, features: ['Full BNPL Suite', 'Unlimited customers', '24/7 support', 'Custom integrations'], display_order: 3 },
+      { id: 'starter', name: 'Starter', description: 'Perfect for small businesses', price_gbp: 299, features: ['Basic BNPL', 'Up to 100 customers', 'Email support'], display_order: 1 },
+      { id: 'growth', name: 'Growth', description: 'For growing companies', price_gbp: 599, features: ['Advanced BNPL', 'Up to 1000 customers', 'Priority support', 'Analytics'], display_order: 2 },
+      { id: 'premium', name: 'Premium', description: 'Enterprise solution', price_gbp: 1199, features: ['Full BNPL Suite', 'Unlimited customers', '24/7 support', 'Custom integrations'], display_order: 3 },
     ]
 
     // Try to insert plans - if it fails due to schema mismatch, that's OK, we'll use defaults
@@ -1503,9 +1503,9 @@ function getLandingContentDefaults() {
 
 function getDefaultPlans() {
   return [
-    { id: 'starter', name: 'Starter', description: 'Perfect for small businesses', price_gbp: 29900, features: ['Basic BNPL', 'Up to 100 customers', 'Email support'] },
-    { id: 'growth', name: 'Growth', description: 'For growing companies', price_gbp: 59900, features: ['Advanced BNPL', 'Up to 1000 customers', 'Priority support', 'Analytics'] },
-    { id: 'premium', name: 'Premium', description: 'Enterprise solution', price_gbp: 119900, features: ['Full BNPL Suite', 'Unlimited customers', '24/7 support', 'Custom integrations'] },
+    { id: 'starter', name: 'Starter', description: 'Perfect for small businesses', price_gbp: 299, features: ['Basic BNPL', 'Up to 100 customers', 'Email support'] },
+    { id: 'growth', name: 'Growth', description: 'For growing companies', price_gbp: 599, features: ['Advanced BNPL', 'Up to 1000 customers', 'Priority support', 'Analytics'] },
+    { id: 'premium', name: 'Premium', description: 'Enterprise solution', price_gbp: 1199, features: ['Full BNPL Suite', 'Unlimited customers', '24/7 support', 'Custom integrations'] },
   ]
 }
 
