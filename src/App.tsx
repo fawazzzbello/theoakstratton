@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { AlertProvider } from './contexts/AlertContext'
+import { BrandingProvider } from './contexts/BrandingContext'
 import ProtectedRoute from './components/common/ProtectedRoute'
 import AlertNotifications from './components/common/AlertNotifications'
 
@@ -24,15 +25,17 @@ import OrdersManagementPage from './pages/Admin/OrdersManagementPage'
 import EmailTemplatesPage from './pages/Admin/EmailTemplatesPage'
 import EmailCampaignsPage from './pages/Admin/EmailCampaignsPage'
 import NavMenuManagementPage from './pages/Admin/NavMenuManagementPage'
+import AdminDashboard from './pages/Admin/AdminDashboard'
 import NotFoundPage from './pages/NotFound'
 
 function App() {
   return (
     <Router>
       <AuthProvider>
-        <AlertProvider>
-          <AlertNotifications />
-          <Routes>
+        <BrandingProvider>
+          <AlertProvider>
+            <AlertNotifications />
+            <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
@@ -61,7 +64,7 @@ function App() {
               path="/admin/content"
               element={
                 <ProtectedRoute>
-                  <ContentManagementPage />
+                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />
@@ -158,7 +161,8 @@ function App() {
             <Route path="/404" element={<NotFoundPage />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
-        </AlertProvider>
+            </AlertProvider>
+        </BrandingProvider>
       </AuthProvider>
     </Router>
   )

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import api from '@/services/api'
+import { useBranding } from '@/contexts/BrandingContext'
 
 interface NavLink {
   id?: string
@@ -22,6 +23,7 @@ export default function Navbar() {
     { label: 'Contact', href: '#contact' },
   ])
   const navigate = useNavigate()
+  const { branding } = useBranding()
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     if (href.startsWith('#')) {
@@ -66,8 +68,14 @@ export default function Navbar() {
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="cursor-pointer"
         >
-          <div className="text-2xl font-bold text-gradient">Oakstratton</div>
-          <div className="text-xs text-secondary-500">BNPL Solutions</div>
+          {branding.logoType === 'image' && branding.logoUrl ? (
+            <img src={branding.logoUrl} alt="Logo" className="h-8 object-contain" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-gradient">{branding.logoText}</div>
+              <div className="text-xs text-secondary-500">BNPL Solutions</div>
+            </>
+          )}
         </motion.div>
 
         {/* Desktop Navigation */}
