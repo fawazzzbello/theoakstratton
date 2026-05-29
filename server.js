@@ -455,20 +455,23 @@ app.use(express.static(publicPath))
 // Rate limiters
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 50,
   message: 'Too many login attempts, please try again later.',
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
 })
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 100,
+  max: 1000,
   message: 'Too many requests from this IP',
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
 })
 
 const formLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 50,
   message: 'Too many form submissions, please try again later.',
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
 })
 
 app.use('/api/', apiLimiter)
@@ -1471,13 +1474,25 @@ app.post('/api/contact', formLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid email format' })
     }
 
-    // Insert into database
-    await pool.query(
-      'INSERT INTO leads (name, email, company, phone, source, status) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (email) DO NOTHING',
-      [name, email, company, phone || null, 'contact', 'new']
-    )
+    // Insert into database with message in notes field
+    if (databaseAvailable) {
+      // Check if lead exists
+      const existing = await pool.query('SELECT id FROM leads WHERE email = $1', [email])
 
-    // TODO: Email functionality - implement later or configure SMTP_USER env var
+      if (existing.rows.length > 0) {
+        // Update existing lead with new message
+        await pool.query(
+          'UPDATE leads SET name = COALESCE($2, name), company = COALESCE($3, company), phone = COALESCE($4, phone), notes = $5, updated_at = CURRENT_TIMESTAMP WHERE email = $1',
+          [email, name, company, phone || null, message || null]
+        )
+      } else {
+        // Insert new lead
+        await pool.query(
+          'INSERT INTO leads (name, email, company, phone, notes, source, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+          [name, email, company, phone || null, message || null, 'contact', 'new']
+        )
+      }
+    }
 
     res.status(200).json({ success: true, message: 'Thank you! We\'ll be in touch soon.' })
   } catch (error) {
