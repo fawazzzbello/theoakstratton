@@ -71,13 +71,12 @@ export default function Footer() {
   return (
     <footer className="bg-dark text-gray-300 border-t border-gray-800">
       <div className="container py-16">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {/* Brand */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="md:col-span-1"
           >
             <h3 className="text-2xl font-bold text-gradient mb-2">
               {content.tagline || 'Oakstratton Solutions'}
@@ -87,40 +86,13 @@ export default function Footer() {
             </p>
           </motion.div>
 
-          {/* Links */}
-          {Object.entries(defaultLinks).slice(0, 3).map((section, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: (idx + 1) * 0.1 }}
-            >
-              <h4 className="font-semibold text-white mb-4">{section[0]}</h4>
-              <ul className="space-y-2">
-                {section[1].map((link, lidx) => {
-                  const linkText = typeof link === 'string' ? link : link.name
-                  return (
-                    <li key={lidx}>
-                      <a
-                        href="#"
-                        className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
-                      >
-                        {linkText}
-                      </a>
-                    </li>
-                  )
-                })}
-              </ul>
-            </motion.div>
-          ))}
-
           {/* Social */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col items-start md:items-end justify-start"
           >
             <h4 className="font-semibold text-white mb-4">Connect</h4>
             <div className="flex gap-3">
@@ -141,22 +113,9 @@ export default function Footer() {
 
         {/* Divider */}
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-gray-400 text-center md:text-left">
-              © {currentYear} Oakstratton Solutions (Belloite Ltd). All rights reserved.
-            </p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              {defaultLinks.Legal.map((link, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
-                >
-                  {link}
-                </a>
-              ))}
-            </div>
-          </div>
+          <p className="text-sm text-gray-400 text-center">
+            © {currentYear} Oakstratton Solutions (Belloite Ltd). All rights reserved.
+          </p>
         </div>
 
         {/* Bottom bar */}
