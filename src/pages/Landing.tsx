@@ -6,7 +6,6 @@ import PricingSection from '@/components/landing/PricingSection'
 import WaitlistSection from '@/components/landing/WaitlistSection'
 import TestimonialsSection from '@/components/landing/TestimonialsSection'
 import ContactFormSection from '@/components/landing/ContactFormSection'
-import CTASection from '@/components/landing/CTASection'
 import Footer from '@/components/landing/Footer'
 
 export default function LandingPage() {
@@ -20,7 +19,6 @@ export default function LandingPage() {
       <WaitlistSection />
       <TestimonialsSection />
       <ContactFormSection />
-      <CTASection />
       <Footer />
     </div>
   )

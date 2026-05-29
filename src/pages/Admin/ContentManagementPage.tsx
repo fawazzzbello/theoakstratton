@@ -4,6 +4,8 @@ import ReactQuill from 'react-quill'
 import 'react-quill/dist/quill.snow.css'
 import AdminLayout from '@/components/admin/AdminLayout'
 import HeroSliderEditor from '@/components/admin/HeroSliderEditor'
+import TestimonialsEditor from '@/components/admin/TestimonialsEditor'
+import ProvidersEditor from '@/components/admin/ProvidersEditor'
 import { useAlert } from '@/contexts/AlertContext'
 import api from '@/services/api'
 
@@ -26,6 +28,24 @@ interface HeroSlide {
   backgroundGradient?: string
   backgroundImage?: string
   displayOrder: number
+}
+
+interface Testimonial {
+  id: string
+  name: string
+  role: string
+  company: string
+  content: string
+  image?: string
+}
+
+interface Provider {
+  name: string
+  fee: string
+  terms: string
+  users: string
+  description: string
+  color: string
 }
 
 const sections = [
@@ -160,6 +180,8 @@ export default function ContentManagementPage() {
                   const isJsonField = fieldKey.includes('content')
                   const value = currentContent[fieldKey] as string || ''
                   const isHeroSection = activeSection === 'hero' && fieldKey === 'hero_content'
+                  const isTestimonialsSection = activeSection === 'testimonials' && fieldKey === 'testimonials_content'
+                  const isProvidersSection = activeSection === 'providers' && fieldKey === 'providers_content'
 
                   if (isHeroSection) {
                     let slides: HeroSlide[] = []
@@ -178,6 +200,56 @@ export default function ContentManagementPage() {
                           slides={slides}
                           onSlidesChange={(updatedSlides) => {
                             handleContentChange(fieldKey, JSON.stringify(updatedSlides))
+                          }}
+                          onSave={() => handleSave(fieldKey)}
+                          isSaving={saving}
+                        />
+                      </motion.div>
+                    )
+                  }
+
+                  if (isTestimonialsSection) {
+                    let testimonials: Testimonial[] = []
+                    try {
+                      testimonials = value ? JSON.parse(value) : []
+                    } catch (e) {
+                      testimonials = []
+                    }
+
+                    return (
+                      <motion.div key={fieldKey} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-700 mb-4 capitalize">
+                          {fieldKey.replace(/_/g, ' ')}
+                        </label>
+                        <TestimonialsEditor
+                          testimonials={testimonials}
+                          onTestimonialsChange={(updatedTestimonials) => {
+                            handleContentChange(fieldKey, JSON.stringify(updatedTestimonials))
+                          }}
+                          onSave={() => handleSave(fieldKey)}
+                          isSaving={saving}
+                        />
+                      </motion.div>
+                    )
+                  }
+
+                  if (isProvidersSection) {
+                    let providers: Provider[] = []
+                    try {
+                      providers = value ? JSON.parse(value) : []
+                    } catch (e) {
+                      providers = []
+                    }
+
+                    return (
+                      <motion.div key={fieldKey} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                        <label className="block text-sm font-semibold text-gray-700 mb-4 capitalize">
+                          {fieldKey.replace(/_/g, ' ')}
+                        </label>
+                        <ProvidersEditor
+                          providers={providers}
+                          onProvidersChange={(updatedProviders) => {
+                            handleContentChange(fieldKey, JSON.stringify(updatedProviders))
                           }}
                           onSave={() => handleSave(fieldKey)}
                           isSaving={saving}

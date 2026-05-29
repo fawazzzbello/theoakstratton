@@ -10,6 +10,13 @@ interface NavLink {
   icon?: string
 }
 
+interface BrandingSettings {
+  logoType: 'text' | 'image'
+  logoText: string
+  logoUrl: string
+  faviconUrl: string
+}
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [navLinks, setNavLinks] = useState<NavLink[]>([
@@ -17,6 +24,12 @@ export default function Navbar() {
     { label: 'Pricing', href: '#pricing' },
     { label: 'Contact', href: '#contact' },
   ])
+  const [branding, setBranding] = useState<BrandingSettings>({
+    logoType: 'text',
+    logoText: 'Oakstratton',
+    logoUrl: '',
+    faviconUrl: '',
+  })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -28,11 +41,31 @@ export default function Navbar() {
         }
       } catch (error) {
         console.error('Failed to fetch navigation menu:', error)
-        // Keep default nav links on error
+      }
+    }
+
+    const fetchBranding = async () => {
+      try {
+        const response = await api.get('/api/landing-content')
+        if (response.data && response.data.branding) {
+          const parsed = JSON.parse(response.data.branding)
+          setBranding(parsed)
+
+          // Update favicon if URL is provided
+          if (parsed.faviconUrl) {
+            const link = document.querySelector("link[rel='icon']") || document.createElement('link')
+            link.rel = 'icon'
+            link.href = parsed.faviconUrl
+            document.head.appendChild(link)
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch branding:', error)
       }
     }
 
     fetchNavMenu()
+    fetchBranding()
   }, [])
 
   return (
@@ -48,10 +81,16 @@ export default function Navbar() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="cursor-pointer"
+          className="cursor-pointer flex items-center gap-2"
         >
-          <div className="text-2xl font-bold text-gradient">Oakstratton</div>
-          <div className="text-xs text-secondary-500">BNPL Solutions</div>
+          {branding.logoType === 'image' && branding.logoUrl ? (
+            <img src={branding.logoUrl} alt="Logo" className="h-10 object-contain" />
+          ) : (
+            <>
+              <div className="text-2xl font-bold text-gradient">{branding.logoText}</div>
+              <div className="text-xs text-secondary-500">BNPL Solutions</div>
+            </>
+          )}
         </motion.div>
 
         {/* Desktop Navigation */}

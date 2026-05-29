@@ -246,23 +246,46 @@ async function seedDefaultLandingContent() {
   try {
     const content = [
       { section: 'hero', key: 'hero_content', value: JSON.stringify([
-        { id: 1, title: 'Flexible Payment Solutions for Your Customers', subtitle: 'Enable Buy Now Pay Later with Oakstratton', image: '🛍️' },
-        { id: 2, title: 'Industry-Leading BNPL Providers', subtitle: 'Klarna, Clearpay, PayPal & More', image: '💳' },
+        { id: '1', title: 'Help Your Customers Buy More', subtitle: 'Offer BNPL payment plans with zero upfront cost and immediate payment to you', stat1: '+30% Conversion Increase', stat2: '+40% Average Order Value', stat3: '7 days Setup Time', backgroundType: 'gradient', backgroundGradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', displayOrder: 0 },
+        { id: '2', title: 'No Risk to You', subtitle: 'Get paid immediately while BNPL providers handle all credit risk and repayment', stat1: '100% Payment Guaranteed', stat2: '0% Credit Risk', stat3: '24hrs Settlement Time', backgroundType: 'gradient', backgroundGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', displayOrder: 1 },
       ]) },
       { section: 'features', key: 'features_content', value: JSON.stringify([
-        { id: 1, title: 'Easy Integration', description: 'Connect in minutes with our simple API', icon: '⚡' },
-        { id: 2, title: 'Multiple BNPL Providers', description: 'Offer various payment options to customers', icon: '🔗' },
-        { id: 3, title: 'Real-Time Analytics', description: 'Track conversions and customer behavior', icon: '📊' },
+        { icon: '🚀', title: 'Lightning Fast Setup', description: 'Get BNPL integrated in just 7 days. No complex technical requirements.' },
+        { icon: '💰', title: 'Guaranteed Payment', description: 'Receive 100% payment within 24 hours. No chargeback risk to you.' },
+        { icon: '🛡️', title: 'Zero Risk', description: 'BNPL providers handle all credit checks and repayment collection.' },
+        { icon: '📈', title: 'Increase Revenue', description: 'Average order value increases by 40% with BNPL option.' },
+        { icon: '🌍', title: 'Global Reach', description: 'Support customers in UK and expanding internationally.' },
+        { icon: '📊', title: 'Real-time Analytics', description: 'Track conversions, adoption rates, and revenue impact.' },
+      ]) },
+      { section: 'providers', key: 'providers_content', value: JSON.stringify([
+        { name: 'Klarna', fee: '2.49% + 30p', terms: '3-4 monthly payments', users: '150M+', description: 'Best for fashion, lifestyle, and home goods', color: 'from-pink-500 to-rose-500' },
+        { name: 'Clearpay', fee: '4-6%', terms: '4 fortnightly payments', users: '20M+', description: 'Perfect for retail and beauty', color: 'from-blue-500 to-cyan-500' },
+        { name: 'PayPal Pay Later', fee: '~2.9%', terms: '4 installments', users: '100M+', description: 'For existing PayPal merchants', color: 'from-yellow-500 to-orange-500' },
+        { name: 'Stripe Installments', fee: '5.99-29.99% APR', terms: '3-24 months', users: '50M+', description: 'Flexible terms for any business', color: 'from-purple-500 to-indigo-500' },
+      ]) },
+      { section: 'testimonials', key: 'testimonials_content', value: JSON.stringify([
+        { quote: 'Setup took just 3 days. Within 2 weeks we saw a 25% jump in average order value. Best investment we\'ve made.', author: 'Sarah Chen', role: 'Fashion Boutique Owner', rating: 5 },
+        { quote: 'Our cart abandonment dropped by 40%. Customers love having payment options. Highly recommend.', author: 'James Morrison', role: 'Furniture Shop Manager', rating: 5 },
+        { quote: 'I was worried about fees, but the extra sales completely offset them. We\'re keeping all providers we set up.', author: 'Maria Rodriguez', role: 'Home Decor Store Owner', rating: 5 },
+        { quote: 'The support team was fantastic. They helped us optimize our checkout flow and we saw immediate results.', author: 'David Park', role: 'Electronics Retailer', rating: 5 },
       ]) },
       { section: 'pricing', key: 'pricing_title', value: 'Simple, Transparent Pricing' },
-      { section: 'pricing', key: 'pricing_subtitle', value: 'Choose the plan that fits your business' },
-      { section: 'waitlist', key: 'waitlist_title', value: 'Join Our Waitlist' },
-      { section: 'waitlist', key: 'waitlist_description', value: 'Be the first to know when we launch new features' },
-      { section: 'contact', key: 'contact_title', value: 'Get In Touch' },
-      { section: 'contact', key: 'contact_description', value: 'Have questions? Our team is ready to help' },
-      { section: 'cta', key: 'cta_content', value: JSON.stringify([
-        { id: 1, title: 'Ready to Transform Your Payments?', description: 'Start your free trial today', button: 'Get Started' },
-      ]) },
+      { section: 'pricing', key: 'pricing_subtitle', value: 'Choose the plan that fits your business needs. Start accepting BNPL payments instantly.' },
+      { section: 'waitlist', key: 'waitlist_title', value: 'Join Our Newsletter' },
+      { section: 'waitlist', key: 'waitlist_description', value: 'Be the first to know when we launch new features and BNPL provider integrations.' },
+      { section: 'contact', key: 'contact_title', value: 'Get in Touch' },
+      { section: 'contact', key: 'contact_description', value: 'Have questions about BNPL integration? Let\'s talk.' },
+      { section: 'footer', key: 'footer_content', value: JSON.stringify({
+        tagline: 'Oakstratton Solutions',
+        companySummary: 'Providing bespoke BNPL payment integration tailored to optimize business operations for profitability.',
+        madeWithText: 'Made with ❤️ by Belloite Holdings. Helping small businesses compete globally.'
+      }) },
+      { section: 'branding', key: 'branding', value: JSON.stringify({
+        logoType: 'text',
+        logoText: 'Oakstratton',
+        logoUrl: '',
+        faviconUrl: ''
+      }) },
     ]
 
     for (const item of content) {
@@ -900,7 +923,7 @@ app.put('/api/admin/landing-content/:sectionKey', authenticateToken, async (req,
     if (databaseAvailable) {
       const valueStr = typeof contentValue === 'string' ? contentValue : JSON.stringify(contentValue)
       await pool.query(
-        'INSERT INTO landing_content (section_name, section_key, content_type, content_value, updated_by) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (section_key) DO UPDATE SET content_value = $4, updated_by = $5, updated_at = CURRENT_TIMESTAMP, version = version + 1',
+        'INSERT INTO landing_content (section_name, section_key, content_type, content_value, updated_by) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (section_key) DO UPDATE SET content_value = $4, updated_by = $5, updated_at = CURRENT_TIMESTAMP, version = landing_content.version + 1',
         [sectionName, sectionKey, contentType, valueStr, req.user.id]
       )
       return res.json({ success: true })

@@ -19,7 +19,7 @@ import EmailTrackingPage from './pages/Admin/EmailTrackingPage'
 import SettingsPage from './pages/Admin/SettingsPage'
 import ReportingPage from './pages/Admin/ReportingPage'
 import UserManagementPage from './pages/Admin/UserManagementPage'
-import ContentManagementPage from './pages/Admin/ContentManagementPage'
+import AdminDashboard from './pages/Admin/AdminDashboard'
 import OrdersManagementPage from './pages/Admin/OrdersManagementPage'
 import EmailTemplatesPage from './pages/Admin/EmailTemplatesPage'
 import EmailCampaignsPage from './pages/Admin/EmailCampaignsPage'
@@ -61,7 +61,7 @@ function App() {
               path="/admin/content"
               element={
                 <ProtectedRoute>
-                  <ContentManagementPage />
+                  <AdminDashboard />
                 </ProtectedRoute>
               }
             />

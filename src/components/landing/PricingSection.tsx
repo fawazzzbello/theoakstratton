@@ -153,7 +153,7 @@ export default function PricingSection() {
               }}
               className={`card relative transition-all ${
                 idx === 1
-                  ? 'border-2 border-primary-500 shadow-lg scale-105 md:scale-100 md:md:scale-110'
+                  ? 'border-2 border-primary-500 shadow-lg scale-105 md:scale-110'
                   : 'border-2 border-gray-200'
               }`}
             >

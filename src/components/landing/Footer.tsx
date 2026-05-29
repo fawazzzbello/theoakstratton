@@ -9,20 +9,17 @@ interface FooterContent {
 }
 
 const defaultLinks = {
-  Product: ['Features', 'Pricing', 'Providers', 'Security'],
-  Company: ['About', 'Blog', 'Careers', 'Contact'],
-  Legal: ['Privacy', 'Terms', 'Cookies', 'Compliance'],
   Social: [
-    { name: 'Twitter', url: 'www.x.com/@oakstratton' },
-    { name: 'Instagram', url: 'www.instagram.com/oakstratton' },
+    { name: 'Twitter', url: 'https://www.x.com/@oakstratton' },
+    { name: 'Instagram', url: 'https://www.instagram.com/oakstratton' },
     { name: 'Email', url: 'mailto:oakstratton@belloite.co.uk' },
   ],
 }
 
 const defaultContent: FooterContent = {
   tagline: 'Oakstratton Solutions',
-  companySummary: 'Providing bespoke BNPL payment integration tailored to optimize business operations for up orth profitability.',
-  madeWithText: 'Made with ❤️ by <a href= "https://www.belloite.co.uk" target = "_blank"> Belloite Holdings </a>. Helping small businesses compete globally.',
+  companySummary: 'Providing bespoke BNPL payment integration tailored to optimize business operations for up north profitability.',
+  madeWithText: 'Made with ❤️ by Belloite Holdings. Helping small businesses compete globally.',
 }
 
 export default function Footer() {
@@ -80,7 +77,7 @@ export default function Footer() {
             className="md:col-span-1"
           >
             <h3 className="text-2xl font-bold text-gradient mb-2">
-              {content.tagline || 'Oakstratton Solutions'}
+              {content.tagline || 'Oakstratton'}
             </h3>
             <p className="text-sm text-gray-400">
               {content.companySummary || defaultContent.companySummary}
@@ -88,32 +85,6 @@ export default function Footer() {
           </motion.div>
 
           {/* Links */}
-          {Object.entries(defaultLinks).slice(0, 3).map((section, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: (idx + 1) * 0.1 }}
-            >
-              <h4 className="font-semibold text-white mb-4">{section[0]}</h4>
-              <ul className="space-y-2">
-                {section[1].map((link, lidx) => {
-                  const linkText = typeof link === 'string' ? link : link.name
-                  return (
-                    <li key={lidx}>
-                      <a
-                        href="#"
-                        className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
-                      >
-                        {linkText}
-                      </a>
-                    </li>
-                  )
-                })}
-              </ul>
-            </motion.div>
-          ))}
 
           {/* Social */}
           <motion.div
@@ -141,22 +112,9 @@ export default function Footer() {
 
         {/* Divider */}
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-gray-400 text-center md:text-left">
-              © {currentYear} Oakstratton Solutions (Belloite Ltd). All rights reserved.
-            </p>
-            <div className="flex gap-6 mt-4 md:mt-0">
-              {defaultLinks.Legal.map((link, idx) => (
-                <a
-                  key={idx}
-                  href="#"
-                  className="text-sm text-gray-400 hover:text-primary-400 transition-colors"
-                >
-                  {link}
-                </a>
-              ))}
-            </div>
-          </div>
+          <p className="text-sm text-gray-400 text-center">
+            © {currentYear} Oakstratton Solutions. All rights reserved.
+          </p>
         </div>
 
         {/* Bottom bar */}
