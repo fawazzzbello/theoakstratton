@@ -11,46 +11,11 @@ interface Plan {
   features?: string[]
 }
 
-interface PaymentMethod {
-  id: string
-  name: string
-  icon: string
-  description: string
-}
-
-const paymentMethods: PaymentMethod[] = [
-  {
-    id: 'klarna',
-    name: 'Klarna',
-    icon: '🛍️',
-    description: 'Pay in 4 interest-free instalments',
-  },
-  {
-    id: 'clearpay',
-    name: 'Clearpay',
-    icon: '💳',
-    description: 'Buy now, pay later in instalments',
-  },
-  {
-    id: 'paypal',
-    name: 'PayPal',
-    icon: '📲',
-    description: 'Secure payment with PayPal',
-  },
-  {
-    id: 'card',
-    name: 'Credit Card',
-    icon: '💰',
-    description: 'Visa, Mastercard, Amex',
-  },
-]
-
 export default function CheckoutPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const { success, error } = useAlert()
   const [loading, setLoading] = useState(false)
-  const [selectedPayment, setSelectedPayment] = useState<string>('klarna')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -87,7 +52,6 @@ export default function CheckoutPage() {
         planId: plan.id,
         email: formData.email,
         name: formData.name,
-        paymentMethod: selectedPayment,
       })
 
       // Redirect to Stripe checkout
@@ -115,32 +79,6 @@ export default function CheckoutPage() {
           <div className="text-center mb-12">
             <h1 className="text-3xl font-bold text-dark mb-2">Complete Your Purchase</h1>
             <p className="text-gray-600">You're about to get started with {plan.name}</p>
-          </div>
-
-          {/* Payment Methods Section */}
-          <div className="mb-12">
-            <h2 className="text-2xl font-bold text-dark mb-2">Choose How to Pay</h2>
-            <p className="text-gray-600 mb-6">Select your preferred BNPL payment method:</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {paymentMethods.map((method) => (
-                <motion.button
-                  key={method.id}
-                  onClick={() => setSelectedPayment(method.id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`p-4 rounded-lg border-2 transition-all text-center cursor-pointer ${
-                    selectedPayment === method.id
-                      ? 'border-primary-500 bg-primary-50 shadow-lg'
-                      : 'border-gray-200 bg-white hover:border-primary-300'
-                  }`}
-                >
-                  <div className="text-4xl mb-2">{method.icon}</div>
-                  <h3 className="font-bold text-dark mb-1">{method.name}</h3>
-                  <p className="text-xs text-gray-600">{method.description}</p>
-                </motion.button>
-              ))}
-            </div>
           </div>
 
           <div className="border-t border-gray-200 pt-8">
