@@ -33,7 +33,7 @@ const defaultSlides: HeroSlide[] = [
     subtitle: 'Get paid immediately while BNPL providers handle all credit risk and repayment',
     stat1: '100% Payment Guaranteed',
     stat2: '0% Credit Risk',
-    stat3: '24hrs Settlement Time',
+    stat3: '72hrs Settlement Time',
     backgroundType: 'gradient',
     backgroundGradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
     displayOrder: 1,
@@ -90,7 +90,7 @@ export default function Hero3DSlider() {
     const timer = setInterval(() => {
       setDirection(1)
       setCurrent((prev) => (prev + 1) % slides.length)
-    }, 8000)
+    }, 10000)
     return () => clearInterval(timer)
   }, [slides.length, loading])
 
