@@ -95,8 +95,8 @@ export default function PricingSection() {
     }
   }
 
-  const formatPrice = (pence: number) => {
-    return `£${(pence / 100).toFixed(2)}`
+  const formatPrice = (pounds: number) => {
+    return `£${pounds.toFixed(2)}`
   }
 
   const handleSelectPlan = (plan: Plan) => {

@@ -90,8 +90,8 @@ export default function CheckoutPage() {
     }
   }
 
-  const formatPrice = (pence: number) => {
-    return `£${(pence / 100).toFixed(2)}`
+  const formatPrice = (pounds: number) => {
+    return `£${pounds.toFixed(2)}`
   }
 
   return (
