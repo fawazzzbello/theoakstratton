@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AdminLayout from '@/components/admin/AdminLayout'
 import { useAlert } from '@/contexts/AlertContext'
+import { useBranding } from '@/contexts/BrandingContext'
 import api from '@/services/api'
 
 interface DashboardContent {
@@ -173,6 +174,7 @@ function BrandingEditor({ content, onSave }: any) {
   const [branding, setBranding] = useState(content || { logoType: 'text', logoText: 'Oakstratton', logoUrl: '', faviconUrl: '' })
   const [uploading, setUploading] = useState(false)
   const { success, error } = useAlert()
+  const { updateBranding } = useBranding()
 
   const handleFileUpload = async (file: File, fileType: 'logo' | 'favicon') => {
     if (!file) return
@@ -193,6 +195,7 @@ function BrandingEditor({ content, onSave }: any) {
           : { ...branding, faviconUrl: response.data.url }
 
         setBranding(updatedBranding)
+        updateBranding(updatedBranding)
         success(`${fileType === 'logo' ? 'Logo' : 'Favicon'} uploaded successfully`)
 
         await onSave('branding', updatedBranding)
@@ -322,7 +325,10 @@ function BrandingEditor({ content, onSave }: any) {
 
       <motion.button
         whileHover={{ scale: 1.05 }}
-        onClick={() => onSave('branding', branding)}
+        onClick={() => {
+          updateBranding(branding)
+          onSave('branding', branding)
+        }}
         disabled={uploading}
         className="btn btn-primary w-full disabled:opacity-50"
       >
