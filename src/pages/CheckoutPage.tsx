@@ -183,15 +183,9 @@ export default function CheckoutPage() {
                   </div>
 
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-6">
-                    <div className="flex justify-between mb-4">
-                      <span className="text-gray-700">Total Amount:</span>
-                      <span className="font-bold text-lg text-dark">{formatPrice(plan.price_gbp)}</span>
-                    </div>
-                    <div className="flex justify-between mb-4">
-                      <span className="text-sm text-gray-600">Payment Method:</span>
-                      <span className="font-semibold text-dark">
-                        {paymentMethods.find((m) => m.id === selectedPayment)?.name}
-                      </span>
+                    <div className="flex justify-between">
+                      <span className="text-gray-700 font-semibold">Total Amount:</span>
+                      <span className="font-bold text-lg text-primary-500">{formatPrice(plan.price_gbp)}</span>
                     </div>
                   </div>
 
@@ -202,7 +196,7 @@ export default function CheckoutPage() {
                     whileTap={{ scale: 0.98 }}
                     className="w-full btn btn-primary py-3 font-semibold mt-6"
                   >
-                    {loading ? 'Processing...' : `Pay with ${paymentMethods.find((m) => m.id === selectedPayment)?.name}`}
+                    {loading ? 'Processing...' : 'Proceed to Stripe Checkout'}
                   </motion.button>
 
                   <p className="text-xs text-gray-500 text-center mt-4">
