@@ -1,37 +1,45 @@
 import { motion } from 'framer-motion'
 
-const providers = [
+const planTypes = [
   {
-    name: 'Klarna',
-    fee: '2.49% + 30p',
-    terms: '3-4 monthly payments',
-    users: '150M+',
-    description: 'Best for fashion, lifestyle, and home goods',
+    name: 'Pay in 4',
+    highlight: '0% Interest',
+    terms: '4 equal fortnightly payments',
+    stat: '65%',
+    statLabel: 'of shoppers prefer this',
+    description: 'The most popular BNPL format — ideal for everyday retail purchases',
     color: 'from-pink-500 to-rose-500',
+    icon: '✂️',
   },
   {
-    name: 'Clearpay',
-    fee: '4-6%',
-    terms: '4 fortnightly payments',
-    users: '20M+',
-    description: 'Perfect for retail and beauty',
+    name: 'Monthly Instalments',
+    highlight: '3–12 Months',
+    terms: 'Spread costs over months',
+    stat: '2.4×',
+    statLabel: 'average order value uplift',
+    description: 'Great for mid-range purchases where customers need breathing room',
     color: 'from-blue-500 to-cyan-500',
+    icon: '📅',
   },
   {
-    name: 'PayPal Pay Later',
-    fee: '~2.9%',
-    terms: '4 installments',
-    users: '100M+',
-    description: 'For existing PayPal merchants',
+    name: 'Extended Finance',
+    highlight: '12–24 Months',
+    terms: 'Longer-term credit options',
+    stat: '£800+',
+    statLabel: 'avg. basket size',
+    description: 'Unlocks high-value sales for furniture, electronics, and more',
     color: 'from-yellow-500 to-orange-500',
+    icon: '🏷️',
   },
   {
-    name: 'Stripe Installments',
-    fee: '5.99-29.99% APR',
-    terms: '3-24 months',
-    users: '50M+',
-    description: 'Flexible terms for any business',
+    name: 'Flexible Credit',
+    highlight: 'Pay Anytime',
+    terms: 'Revolving credit line',
+    stat: '30%',
+    statLabel: 'repeat purchase increase',
+    description: 'Keeps customers coming back with a persistent credit balance',
     color: 'from-purple-500 to-indigo-500',
+    icon: '🔄',
   },
 ]
 
@@ -67,10 +75,10 @@ export default function ProvidersSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold text-dark mb-4">
-            Top BNPL Providers
+            BNPL Plans That Convert
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Choose from the leading payment providers or we can set up multiple for you
+            Offer the right payment plan for every customer — from instant split payments to long-term finance
           </p>
         </motion.div>
 
@@ -81,16 +89,15 @@ export default function ProvidersSection() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
-          {providers.map((provider, idx) => (
+          {planTypes.map((plan, idx) => (
             <motion.div
               key={idx}
               variants={itemVariants}
               whileHover={{ y: -8 }}
               className="card p-8 border-2 border-gray-200 hover:border-primary-200 relative cursor-pointer transition-all"
             >
-              {/* Top accent bar on hover */}
               <motion.div
-                className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${provider.color}`}
+                className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${plan.color}`}
                 variants={{
                   initial: { scaleX: 0 },
                   hover: { scaleX: 1 },
@@ -99,24 +106,27 @@ export default function ProvidersSection() {
                 style={{ originX: 0 }}
               />
 
-              <h3 className="text-2xl font-bold text-dark mb-2">{provider.name}</h3>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-2xl">{plan.icon}</span>
+                <h3 className="text-xl font-bold text-dark">{plan.name}</h3>
+              </div>
 
               <div className="mb-6">
-                <div className="text-3xl font-bold text-primary-500 mb-2">{provider.fee}</div>
-                <p className="text-sm text-gray-600">{provider.terms}</p>
+                <div className="text-3xl font-bold text-primary-500 mb-2">{plan.highlight}</div>
+                <p className="text-sm text-gray-600">{plan.terms}</p>
               </div>
 
               <div className="flex items-center gap-2 mb-4">
-                <span className="text-2xl">👥</span>
-                <span className="text-sm text-gray-700 font-medium">{provider.users} users</span>
+                <span className="text-lg font-bold text-dark">{plan.stat}</span>
+                <span className="text-sm text-gray-600">{plan.statLabel}</span>
               </div>
 
-              <p className="text-sm text-gray-600">{provider.description}</p>
+              <p className="text-sm text-gray-600">{plan.description}</p>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Custom Setup Info */}
+        {/* Strategy Info */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -127,11 +137,11 @@ export default function ProvidersSection() {
           <div className="flex items-start gap-4">
             <span className="text-4xl">💡</span>
             <div>
-              <h4 className="text-2xl font-bold text-dark mb-2">Custom Combinations</h4>
+              <h4 className="text-2xl font-bold text-dark mb-2">Stack Plans for Maximum Conversion</h4>
               <p className="text-gray-600">
-                Not sure which provider is best? We recommend setting up 2-3 providers to maximize
-                customer choice and conversion rates. Our Growth plan includes A/B testing to find
-                the best combination for your business.
+                Not sure which plan fits your customers best? We recommend offering 2–3 plan types
+                to maximise choice and conversion. Our Growth tier includes A/B testing to
+                automatically surface the best-performing combination for your store.
               </p>
             </div>
           </div>
