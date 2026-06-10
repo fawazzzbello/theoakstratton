@@ -367,10 +367,42 @@ pool.query('SELECT NOW()', (err, res) => {
 // ============================================================================
 
 app.set('trust proxy', 1)
-app.use(helmet())
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        fontSrc: ["'self'", 'data:'],
+        imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+        connectSrc: ["'self'", 'https://api.stripe.com', 'https://hooks.stripe.com'],
+        frameSrc: ["'self'", 'https://js.stripe.com', 'https://hooks.stripe.com'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+    crossOriginEmbedderPolicy: false,
+    permittedCrossDomainPolicies: { permittedPolicies: 'none' },
+  })
+)
+
 app.use(
   cors({
-    origin: (process.env.CORS_ORIGIN || '*').split(','),
+    origin: process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+      : process.env.NODE_ENV === 'production'
+        ? false
+        : true,
     credentials: true,
   })
 )
@@ -438,26 +470,38 @@ try {
 app.use(express.static(distPath))
 app.use(express.static(publicPath))
 
+// Warn loudly if secrets are using insecure defaults
+if (!process.env.JWT_SECRET) {
+  console.warn('⚠️  WARNING: JWT_SECRET is not set — using insecure default. Set this in production!')
+}
+if (!process.env.JWT_REFRESH_SECRET) {
+  console.warn('⚠️  WARNING: JWT_REFRESH_SECRET is not set — using insecure default. Set this in production!')
+}
+
+const isLocalRequest = (req: { ip: string }) =>
+  process.env.NODE_ENV !== 'production' &&
+  (req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === 'localhost')
+
 // Rate limiters
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
   message: 'Too many login attempts, please try again later.',
-  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
+  skip: isLocalRequest,
 })
 
 const apiLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 1000,
   message: 'Too many requests from this IP',
-  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
+  skip: isLocalRequest,
 })
 
 const formLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 50,
   message: 'Too many form submissions, please try again later.',
-  skip: (req) => req.ip === '127.0.0.1' || req.ip === 'localhost',
+  skip: isLocalRequest,
 })
 
 app.use('/api/', apiLimiter)
