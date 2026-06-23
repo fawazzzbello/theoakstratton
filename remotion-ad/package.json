@@ -1,0 +1,25 @@
+{
+  "name": "oakstratton-remotion-ad",
+  "version": "1.0.0",
+  "description": "Oakstratton social media video ads — TikTok, Snapchat, Instagram",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:tiktok": "remotion render src/index.ts OakstrattonAd-TikTok out/oakstratton-tiktok.mp4",
+    "render:instagram": "remotion render src/index.ts OakstrattonAd-Instagram out/oakstratton-instagram.mp4",
+    "render:all": "npm run render:tiktok && npm run render:instagram"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.235",
+    "@remotion/google-fonts": "^4.0.235",
+    "remotion": "^4.0.235",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.3.0"
+  },
+  "remotion": {
+    "entryPoint": "src/index.ts"
+  }
+}
